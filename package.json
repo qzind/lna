@@ -1,0 +1,12 @@
+{
+  "name": "lna",
+  "version": "0.0.1",
+  "description": "Helpers for Local Network Access restrictions",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "private": true
+}
