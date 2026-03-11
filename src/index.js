@@ -79,6 +79,28 @@ async function lnaPermissionQuery(scope) {
 	}
 }
 
+class LnaDeniedError extends Error {
+	constructor() {
+		super("Local Network Access was denied");
+		this.name = this.constructor.name;
+	}
+}
+
+async function fetchLna(url) {
+	try {
+		return await fetch(url);
+	} catch (e) {
+		if (await isLnaAllowed(new URL(url).hostname, true)) {
+			throw e;
+		} else {
+			// TODO: We're in a 'prompt' or 'blocked' scenario, add callback to try fetch again
+			// when this status changes
+			throw new LnaDeniedError();
+		}
+	}
+}
+
+
 /*
 // --- Test Cases ---
 lnaRestricted("localhost", true); // "loopback"
@@ -95,18 +117,4 @@ lnaRestricted("10.0.0.5", true); // "local"
 lnaRestricted("fe80::1ff:fe23:4567:890a", true);    // "local" (IPv6 Link-Local)
 lnaRestricted("2001:db8::ff00:42:8329", true);      // "local" (Global/Private IPv6)
 */
-
-fetch('http://192.168.2.240:8182')
-	.then(response => {
-		console.log(response.text());
-	}).catch(err => {
-	isLnaAllowed('localhost', true).then(allowed => {
-		if (!allowed) {
-			// TODO: We're in a 'prompt' or 'blocked' scenario, add callback to try fetch again
-			// when this status changes
-			console.error("Please enable LNA and try again");
-		} else {
-			console.error("LNA is already enabled, so how did we get here?");
-		}
-	})
-});
+await fetchLna('http://192.168.2.240:8182');
