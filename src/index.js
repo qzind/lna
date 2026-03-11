@@ -25,34 +25,32 @@ function guessScope(hostname, debug) {
     return scope;
 }
 
-function isLnaAllowed(hostname, debug) {
+async function isLnaAllowed(hostname, debug) {
     // first, query the old property
-    return lnaPermissionQuery().then(function (state) {
-        switch (state) {
-            case "granted":
-                console.log("Not granted. State:", state);
-                return true;
-                break;
-            case "unknown":
-                console.log("Unknown, we'll look deeper...");
-                var scope = guessScope(hostname, debug);
-                // second, query the "scoped" property
-                return lnaPermissionQuery(scope).then(function (scopedState) {
-                    switch (scopedState) {
-                        case "granted":
-                            console.log("Granted. State:", state);
-                            return true;
-                        default:
-                            console.log("Not granted. State:", state);
-                            return false;
-                    }
-                });
-                break;
-            default:
-                console.log("Not granted. State:", state);
-                return false;
-        }
-    });
+    const state = await lnaPermissionQuery();
+    switch (state) {
+        case "granted":
+            console.log("Not granted. State:", state);
+            return true;
+            break;
+        case "unknown":
+            console.log("Unknown, we'll look deeper...");
+            var scope = guessScope(hostname, debug);
+            // second, query the "scoped" property
+            const scopedState = await lnaPermissionQuery(scope);
+            switch (scopedState) {
+                case "granted":
+                    console.log("Granted. State:", state);
+                    return true;
+                default:
+                    console.log("Not granted. State:", state);
+                    return false;
+            }
+            break;
+        default:
+            console.log("Not granted. State:", state);
+            return false;
+    }
 }
 
 
@@ -62,24 +60,22 @@ function isLnaAllowed(hostname, debug) {
  * denied: Help inform the user for appropriate action
  * unknown: Our own magic value to look deeper and eventually give up
  */
-function lnaPermissionQuery(scope) {
-    var name = {name: 'local-network-access'};
+async function lnaPermissionQuery(scope) {
+    const name = {name: 'local-network-access'};
     if (scope) {
         name.name = scope + "-network";
     }
     if (typeof navigator !== 'undefined' && navigator.permissions !== 'undefined') {
-        return navigator.permissions.query(name)
-            .then(function (result) {
-                return result.state;
-            })
-            .catch(function (err) {
-                if (err instanceof TypeError) {
-                    console.log("Permission", name.name, "is not supported by this browser");
-                } else {
-                    console.error(err);
-                }
-                return "unknown";
-            });
+        try {
+            return (await navigator.permissions.query(name)).state;
+        } catch (err) {
+            if (err instanceof TypeError) {
+                console.log("Permission", name.name, "is not supported by this browser");
+            } else {
+                console.error(err);
+            }
+            return "unknown";
+        }
     } else {
         return Promise.resolve("unknown");
     }
