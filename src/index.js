@@ -8,47 +8,47 @@
  * * @param {bool} debug - Enable hostname logging to terminal
  */
 function guessScope(hostname, debug) {
-    var host = hostname.toLowerCase();
+	var host = hostname.toLowerCase();
 
-    var isLoopback =
-        host.indexOf('localhost') > -1 ||
-        host === '::1' ||
-        host === '[::1]' ||
-        host.indexOf('127.') === 0;
+	var isLoopback =
+		host.indexOf('localhost') > -1 ||
+		host === '::1' ||
+		host === '[::1]' ||
+		host.indexOf('127.') === 0;
 
-    var scope = isLoopback ? "loopback" : "local";
+	var scope = isLoopback ? "loopback" : "local";
 
-    if (debug) {
-        console.log(hostname + " --> " + scope);
-    }
+	if (debug) {
+		console.log(hostname + " --> " + scope);
+	}
 
-    return scope;
+	return scope;
 }
 
 async function isLnaAllowed(hostname, debug) {
-    // first, query the old property
-    const state = await lnaPermissionQuery();
-    switch (state) {
-        case "granted":
-            console.log("Not granted. State:", state);
-            return true;
-        case "unknown":
-            console.log("Unknown, we'll look deeper...");
-            var scope = guessScope(hostname, debug);
-            // second, query the "scoped" property
-            const scopedState = await lnaPermissionQuery(scope);
-            switch (scopedState) {
-                case "granted":
-                    console.log("Granted. State:", state);
-                    return true;
-                default:
-                    console.log("Not granted. State:", state);
-                    return false;
-            }
-        default:
-            console.log("Not granted. State:", state);
-            return false;
-    }
+	// first, query the old property
+	const state = await lnaPermissionQuery();
+	switch (state) {
+		case "granted":
+			console.log("Not granted. State:", state);
+			return true;
+		case "unknown":
+			console.log("Unknown, we'll look deeper...");
+			var scope = guessScope(hostname, debug);
+			// second, query the "scoped" property
+			const scopedState = await lnaPermissionQuery(scope);
+			switch (scopedState) {
+				case "granted":
+					console.log("Granted. State:", state);
+					return true;
+				default:
+					console.log("Not granted. State:", state);
+					return false;
+			}
+		default:
+			console.log("Not granted. State:", state);
+			return false;
+	}
 }
 
 
@@ -59,24 +59,24 @@ async function isLnaAllowed(hostname, debug) {
  * unknown: Our own magic value to look deeper and eventually give up
  */
 async function lnaPermissionQuery(scope) {
-    const name = {name: 'local-network-access'};
-    if (scope) {
-        name.name = scope + "-network";
-    }
-    if (typeof navigator !== 'undefined' && navigator.permissions !== 'undefined') {
-        try {
-            return (await navigator.permissions.query(name)).state;
-        } catch (err) {
-            if (err instanceof TypeError) {
-                console.log("Permission", name.name, "is not supported by this browser");
-            } else {
-                console.error(err);
-            }
-            return "unknown";
-        }
-    } else {
-        return Promise.resolve("unknown");
-    }
+	const name = {name: 'local-network-access'};
+	if (scope) {
+		name.name = scope + "-network";
+	}
+	if (typeof navigator !== 'undefined' && navigator.permissions !== 'undefined') {
+		try {
+			return (await navigator.permissions.query(name)).state;
+		} catch (err) {
+			if (err instanceof TypeError) {
+				console.log("Permission", name.name, "is not supported by this browser");
+			} else {
+				console.error(err);
+			}
+			return "unknown";
+		}
+	} else {
+		return Promise.resolve("unknown");
+	}
 }
 
 /*
@@ -97,16 +97,16 @@ lnaRestricted("2001:db8::ff00:42:8329", true);      // "local" (Global/Private I
 */
 
 fetch('http://192.168.2.240:8182')
-    .then(response => {
-        console.log(response.text());
-    }).catch(err => {
-    isLnaAllowed('localhost', true).then(allowed => {
-        if (!allowed) {
-            // TODO: We're in a 'prompt' or 'blocked' scenario, add callback to try fetch again
-            // when this status changes
-            console.error("Please enable LNA and try again");
-        } else {
-            console.error("LNA is already enabled, so how did we get here?");
-        }
-    })
+	.then(response => {
+		console.log(response.text());
+	}).catch(err => {
+	isLnaAllowed('localhost', true).then(allowed => {
+		if (!allowed) {
+			// TODO: We're in a 'prompt' or 'blocked' scenario, add callback to try fetch again
+			// when this status changes
+			console.error("Please enable LNA and try again");
+		} else {
+			console.error("LNA is already enabled, so how did we get here?");
+		}
+	})
 });
