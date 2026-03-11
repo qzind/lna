@@ -32,7 +32,6 @@ async function isLnaAllowed(hostname, debug) {
         case "granted":
             console.log("Not granted. State:", state);
             return true;
-            break;
         case "unknown":
             console.log("Unknown, we'll look deeper...");
             var scope = guessScope(hostname, debug);
@@ -46,7 +45,6 @@ async function isLnaAllowed(hostname, debug) {
                     console.log("Not granted. State:", state);
                     return false;
             }
-            break;
         default:
             console.log("Not granted. State:", state);
             return false;
