@@ -2,14 +2,6 @@ import {Address4, Address6} from 'ip-address';
 
 type AddressSpace = "loopback" | "local" | "public" | "unknown";
 
-/**
- * Categorizes a WebSocket hostname.
- *
- * Detect loopback (127.0.0.1/8, ::1, , [::1], *localhost*)
- * Everything else is logged as 'local'.
- *
- * * @param {string} hostname - Hostname to check
- */
 export function guessAddressSpace(hostname: string): AddressSpace {
     let host = hostname.toLowerCase();
 
@@ -24,7 +16,11 @@ export function guessAddressSpace(hostname: string): AddressSpace {
         return "loopback";
     }
 
-    return "local";
+    if (host.match('.*\.(local|internal)')) {
+        return "local";
+    }
+
+    return "public";
 }
 
 function getIp4AddressSpace(ip: Address4): AddressSpace {

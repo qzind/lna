@@ -31,22 +31,3 @@ async function fetchLna(url) {
 		}
 	}
 }
-
-
-/*
-// --- Test Cases ---
-lnaRestricted("localhost", true); // "loopback"
-lnaRestricted("localhost.qz.io", true); // "loopback"
-lnaRestricted("localhost.foo.com", true); // "loopback"
-lnaRestricted("127.0.0.1", true); // "loopback"
-lnaRestricted("::1", true);                         // "loopback"
-lnaRestricted("[::1]", true);                       // "loopback" (Bracketed)
-
-// Local cases (Anything else)
-lnaRestricted("192.168.1.50", true); // "local"
-lnaRestricted("my-internal-server.local", true); // "local"
-lnaRestricted("10.0.0.5", true); // "local"
-lnaRestricted("fe80::1ff:fe23:4567:890a", true);    // "local" (IPv6 Link-Local)
-lnaRestricted("2001:db8::ff00:42:8329", true);      // "local" (Global/Private IPv6)
-*/
-await fetchLna('http://192.168.2.240:8182');
