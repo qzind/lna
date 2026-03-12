@@ -1,29 +1,4 @@
-/**
- * Categorizes a WebSocket hostname.
- *
- * Detect loopback (127.0.0.1/8, ::1, , [::1], *localhost*)
- * Everything else is logged as 'local'.
- *
- * * @param {string} hostname - Hostname to check
- * * @param {bool} debug - Enable hostname logging to terminal
- */
-function guessScope(hostname, debug) {
-	var host = hostname.toLowerCase();
-
-	var isLoopback =
-		host.indexOf('localhost') > -1 ||
-		host === '::1' ||
-		host === '[::1]' ||
-		host.indexOf('127.') === 0;
-
-	var scope = isLoopback ? "loopback" : "local";
-
-	if (debug) {
-		console.log(hostname + " --> " + scope);
-	}
-
-	return scope;
-}
+import {guessScope} from "./scope";
 
 async function isLnaAllowed(hostname, debug) {
 	// first, query the old property
