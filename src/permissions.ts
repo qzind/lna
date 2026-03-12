@@ -62,8 +62,11 @@ export async function getLnaPermissionState(name: LnaPermissionName) {
 	return (await getLnaPermission(name))!.state;
 }
 
-async function getLnaPermissionStates() {
+export type LnaPermissionStates = Record<LnaPermissionName, PermissionState | null>;
+
+export async function getLnaPermissionStates(): Promise<LnaPermissionStates> {
 	return Object.fromEntries(await Promise.all(
 		LnaPermissionNames.map(async name => [name, await getLnaPermissionState(name)]))
 	);
 }
+

@@ -1,4 +1,10 @@
-import {getLnaPermissionState, getRequiredPermission} from "./permissions.js";
+import {
+	getLnaPermissionState,
+	getLnaPermissionStates,
+	getRequiredPermission,
+	LnaPermissionName,
+	LnaPermissionStates
+} from "./permissions.js";
 
 class LnaDeniedError extends Error {
 	constructor() {
@@ -7,8 +13,25 @@ class LnaDeniedError extends Error {
 	}
 }
 
-async function wasLnaDenied(hostname: string) {
-	const permission = getRequiredPermission(hostname);
+// After a failed connection attempt, returns the permission that applied to the request.
+// Returns `null` if the request didn't require a permission, or `undefined` if it couldn't be
+// determined.
+async function getDeniedPermission(
+	hostname: string,
+	statesBefore: LnaPermissionStates
+): Promise<LnaPermissionName | null | undefined> {
+	const statesAfter = await getLnaPermissionStates();
+	for (const [permission, state] of Object.entries(statesAfter) as [LnaPermissionName, PermissionState][]) {
+		if (statesBefore[permission] === "prompt" && (state === "denied" || state === 'granted')) {
+			return permission;
+		}
+	}
+
+	return getRequiredPermission(hostname);
+}
+
+async function wasLnaDenied(hostname: string, statesBefore: LnaPermissionStates) {
+	const permission = await getDeniedPermission(hostname, statesBefore);
 	if (permission === null) return false;
 	if (permission === undefined) return undefined;
 
@@ -27,10 +50,11 @@ export async function detectLna(
 	if (typeof url === 'string') {
 		url = new URL(url);
 	}
+	const statesBefore = await getLnaPermissionStates();
 	try {
 		return await callback(url);
 	} catch (e) {
-		if (await wasLnaDenied(url.hostname)) {
+		if (await wasLnaDenied(url.hostname, statesBefore)) {
 			// TODO: We're in a 'prompt' or 'blocked' scenario, add callback to try fetch again
 			// when this status changes
 			throw new LnaDeniedError();
