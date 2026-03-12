@@ -1,4 +1,4 @@
-import {guessScope} from "./scope";
+import {guessAddressSpace} from "./address-space";
 
 async function isLnaAllowed(hostname, debug) {
 	// first, query the old property
@@ -9,9 +9,9 @@ async function isLnaAllowed(hostname, debug) {
 			return true;
 		case "unknown":
 			console.log("Unknown, we'll look deeper...");
-			var scope = guessScope(hostname, debug);
+			var addressSpace = guessAddressSpace(hostname);
 			// second, query the "scoped" property
-			const scopedState = await lnaPermissionQuery(scope);
+			const scopedState = await lnaPermissionQuery(addressSpace);
 			switch (scopedState) {
 				case "granted":
 					console.log("Granted. State:", state);
@@ -33,10 +33,10 @@ async function isLnaAllowed(hostname, debug) {
  * denied: Help inform the user for appropriate action
  * unknown: Our own magic value to look deeper and eventually give up
  */
-async function lnaPermissionQuery(scope) {
+async function lnaPermissionQuery(addressSpace) {
 	const name = {name: 'local-network-access'};
-	if (scope) {
-		name.name = scope + "-network";
+	if (addressSpace) {
+		name.name = addressSpace + "-network";
 	}
 	if (typeof navigator !== 'undefined' && navigator.permissions !== 'undefined') {
 		try {

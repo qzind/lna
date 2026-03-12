@@ -1,4 +1,4 @@
-type Scope = "loopback" | "local" | "public";
+type AddressSpace = "loopback" | "local" | "public";
 
 /**
  * Categorizes a WebSocket hostname.
@@ -7,9 +7,8 @@ type Scope = "loopback" | "local" | "public";
  * Everything else is logged as 'local'.
  *
  * * @param {string} hostname - Hostname to check
- * * @param {bool} debug - Enable hostname logging to terminal
  */
-export function guessScope(hostname: string): Scope | null {
+export function guessAddressSpace(hostname: string): AddressSpace | null {
     const host = hostname.toLowerCase();
 
     if (host.indexOf('localhost') > -1 ||
