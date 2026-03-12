@@ -47,3 +47,23 @@ export function getRequiredPermission(hostname: string) {
     if (targetSpace === "local") return LnaLoopbackPermission;
     return undefined;
 }
+
+export async function getLnaPermission(name: LnaPermissionName) {
+    if (!SupportedPermissions[name]) {
+        return null;
+    }
+    return await navigator.permissions.query({name} as unknown as { name: PermissionName });
+}
+
+export async function getLnaPermissionState(name: LnaPermissionName) {
+    if (!SupportedPermissions[name]) {
+        return null;
+    }
+    return (await getLnaPermission(name))!.state;
+}
+
+async function getLnaPermissionStates() {
+    return Object.fromEntries(await Promise.all(
+        LnaPermissionNames.map(async name => [name, await getLnaPermissionState(name)]))
+    );
+}
