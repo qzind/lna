@@ -1,4 +1,4 @@
-type AddressSpace = "loopback" | "local" | "public";
+type AddressSpace = "loopback" | "local" | "public" | "unknown";
 
 /**
  * Categorizes a WebSocket hostname.
@@ -8,7 +8,7 @@ type AddressSpace = "loopback" | "local" | "public";
  *
  * * @param {string} hostname - Hostname to check
  */
-export function guessAddressSpace(hostname: string): AddressSpace | null {
+export function guessAddressSpace(hostname: string): AddressSpace {
     const host = hostname.toLowerCase();
 
     if (host.indexOf('localhost') > -1 ||
@@ -20,4 +20,18 @@ export function guessAddressSpace(hostname: string): AddressSpace | null {
     }
 
     return "local";
+}
+
+// Assumes that loopback is always detected, i.e. "unknown" can't include "loopback"
+export function isLessPublic(lhs: AddressSpace, rhs: AddressSpace): boolean | undefined {
+    if ((lhs === "loopback" && rhs !== "loopback") ||
+        (lhs === "local" && rhs === "public")) {
+        return true;
+    }
+    if (rhs === "loopback" || lhs === "public" ||
+        (lhs !== "unknown" && rhs !== "unknown")
+    ) {
+        return false;
+    }
+    return undefined;
 }
