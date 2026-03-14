@@ -1,6 +1,6 @@
 import {Address4, Address6} from 'ip-address';
 
-type AddressSpace = "loopback" | "local" | "public" | "unknown";
+export type AddressSpace = "loopback" | "local" | "public" | "unknown";
 
 export function guessAddressSpace(hostname: string): AddressSpace {
 	let host = hostname.toLowerCase();

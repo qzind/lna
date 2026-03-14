@@ -27,8 +27,8 @@ const LnaPermissionNames: LnaPermissionName[] = [
 	LnaLoopbackPermission, LnaLocalPermission, LnaJointPermission,
 ];
 
-const SupportedPermissions = Object.fromEntries(
-	await Promise.all(LnaPermissionNames.map(name => [name, permissionSupported(name)]))
+export const SupportedPermissions = Object.fromEntries(
+	await Promise.all(LnaPermissionNames.map(async name => [name, await permissionSupported(name)]))
 );
 export const SplitPermissionsSupported = SupportedPermissions[LnaLoopbackPermission] && SupportedPermissions[LnaLocalPermission];
 export const JointPermissionSupported = SupportedPermissions[LnaJointPermission];
