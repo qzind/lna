@@ -69,4 +69,3 @@ export async function getLnaPermissionStates(): Promise<LnaPermissionStates> {
 		LnaPermissionNames.map(async name => [name, await getLnaPermissionState(name)]))
 	);
 }
-

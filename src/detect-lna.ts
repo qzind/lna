@@ -1,22 +1,16 @@
 import {
-	getLnaPermissionState,
+	getLnaPermission,
 	getLnaPermissionStates,
 	getRequiredPermission,
 	LnaPermissionName,
 	LnaPermissionStates
 } from "./permissions.js";
-
-class LnaDeniedError extends Error {
-	constructor() {
-		super("Local Network Access was denied");
-		this.name = this.constructor.name;
-	}
-}
+import {LnaError} from "./error.js";
 
 // After a failed connection attempt, returns the permission that applied to the request.
 // Returns `null` if the request didn't require a permission, or `undefined` if it couldn't be
 // determined.
-async function getDeniedPermission(
+async function getPermissionAfterError(
 	hostname: string,
 	statesBefore: LnaPermissionStates
 ): Promise<LnaPermissionName | null | undefined> {
@@ -28,17 +22,6 @@ async function getDeniedPermission(
 	}
 
 	return getRequiredPermission(hostname);
-}
-
-async function wasLnaDenied(hostname: string, statesBefore: LnaPermissionStates) {
-	const permission = await getDeniedPermission(hostname, statesBefore);
-	if (permission === null) return false;
-	if (permission === undefined) return undefined;
-
-	const state = await getLnaPermissionState(permission);
-	if (state === "denied") return true;
-	if (state === "granted") return false;
-	return undefined;
 }
 
 // Execute `callback` and try to detect if it fails due to Local Network Access being denied.
@@ -54,12 +37,10 @@ export async function detectLna(
 	try {
 		return await callback(url);
 	} catch (e) {
-		if (await wasLnaDenied(url.hostname, statesBefore)) {
-			// TODO: We're in a 'prompt' or 'blocked' scenario, add callback to try fetch again
-			// when this status changes
-			throw new LnaDeniedError();
-		} else {
-			throw e;
-		}
+		const permissionName = await getPermissionAfterError(url.hostname, statesBefore);
+		const permission = permissionName
+			? await getLnaPermission(permissionName)
+			: permissionName;
+		throw LnaError.fromPermission(permission, e);
 	}
 }
