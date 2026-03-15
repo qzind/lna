@@ -1,6 +1,12 @@
 import {describe, expect, test} from 'vitest'
 import {commands} from 'vitest/browser';
-import {getLnaPermissionState, SupportedPermissions} from "./permissions";
+import {
+	getLnaPermissionState,
+	getRequiredPermissionForAddressSpaces,
+	LnaPermissionsSupported,
+	SplitPermissionsSupported,
+	SupportedPermissions
+} from "./permissions";
 import Bowser from 'bowser';
 
 if (typeof window === 'undefined') {
@@ -40,9 +46,40 @@ describe('SupportedPermissions', () => {
 if (supported.length) {
 	describe('getLnaPermissionState', async () => {
 		test.each(supported)('%s', async name => {
+			await commands.setPermissions({name}, 'prompt');
 			expect(await getLnaPermissionState(name)).toEqual('prompt');
 			await commands.setPermissions({name}, 'granted');
 			expect(await getLnaPermissionState(name)).toEqual('granted');
 		})
 	})
 }
+
+describe('getRequiredPermissionForAddressSpaces', () => {
+	let cases = [
+		['public', 'public', null],
+		['public', 'local', 'local-network'],
+		['public', 'loopback', 'loopback-network'],
+		['public', 'unknown', undefined],
+		['local', 'public', null],
+		['local', 'local', null],
+		['local', 'loopback', 'loopback-network'],
+		['local', 'unknown', undefined],
+		['loopback', 'public', null],
+		['loopback', 'local', null],
+		['loopback', 'loopback', null],
+		['loopback', 'unknown', null],
+		['unknown', 'public', null],
+		['unknown', 'local', undefined],
+		['unknown', 'loopback', 'loopback-network'], // Assuming 'unknown' can't be 'loopback'
+		['unknown', 'unknown', undefined],
+	];
+	if (!LnaPermissionsSupported) {
+		cases = cases.map(([from, to]) => [from, to, null]);
+	} else if (!SplitPermissionsSupported) {
+		cases = cases.map(([from, to, p]) => [from, to, p ? 'local-network-access' : p]);
+	}
+
+	test.each(cases)('from `%s` to `%s` requires `%s` permission', (from, to, expected) => {
+		expect(getRequiredPermissionForAddressSpaces(to, from)).toStrictEqual(expected);
+	})
+});
