@@ -1,6 +1,7 @@
-import {defineConfig} from 'vitest/config'
+import {defineConfig, ViteUserConfig} from 'vitest/config'
 import {webdriverio} from '@vitest/browser-webdriverio';
 import {BrowserCommand, BrowserInstanceOption} from "vitest/node";
+import * as path from "node:path";
 
 const setPermissions: BrowserCommand<[PermissionDescriptor, PermissionState]> = async (ctx, descriptor, state) => {
 	if (ctx.provider.name !== 'webdriverio') {
@@ -24,6 +25,11 @@ function instance(
 		provider: webdriverio({
 			capabilities: {browserVersion: version},
 		})
+const commonConfig: ViteUserConfig = {
+	test: {
+		alias: {
+			src: path.resolve(__dirname, 'src'),
+		},
 	}
 }
 
@@ -31,16 +37,19 @@ export default defineConfig({
 	test: {
 		projects: [
 			{
+				...commonConfig,
 				test: {
+					...commonConfig.test,
 					name: 'unit',
-					include: ['src/*.test.{js,ts}'],
-					exclude: ['src/*.browser.test.{js,ts}'],
-				}
+					dir: 'test/unit',
+				},
 			},
 			{
+				...commonConfig,
 				test: {
+					...commonConfig.test,
 					name: 'browser',
-					include: ['src/*.browser.test.{js,ts}'],
+					dir: 'test/browser',
 					browser: {
 						enabled: true,
 						headless: true,

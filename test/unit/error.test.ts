@@ -1,5 +1,5 @@
 import {describe, expect, test} from 'vitest';
-import {LnaError} from "./error.js";
+import {LnaError} from "src/error.js";
 
 describe('LnaError.fromPermission', () => {
 	test.each([

@@ -1,6 +1,6 @@
 import {describe, expect, test} from 'vitest';
 
-import {guessAddressSpace, isLessPublic} from "./address-space";
+import {guessAddressSpace, isLessPublic} from "src/address-space";
 
 // Mirroring IP address test cases from firefox source
 describe('guessAddressSpace', () => {

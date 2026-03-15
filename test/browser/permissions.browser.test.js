@@ -6,7 +6,7 @@ import {
 	LnaPermissionsSupported,
 	SplitPermissionsSupported,
 	SupportedPermissions
-} from "./permissions";
+} from "src/permissions";
 import Bowser from 'bowser';
 
 if (typeof window === 'undefined') {
@@ -39,6 +39,7 @@ function expectedSupport() {
 
 describe('SupportedPermissions', () => {
 	test('should match expected support', () => {
+		// console.error(window.location);
 		expect(supported.sort()).toEqual(expectedSupport().sort());
 	});
 });
@@ -83,3 +84,4 @@ describe('getRequiredPermissionForAddressSpaces', () => {
 		expect(getRequiredPermissionForAddressSpaces(to, from)).toStrictEqual(expected);
 	})
 });
+
