@@ -6,13 +6,15 @@ import {
 	LnaPermissionStates
 } from "./permissions.js";
 import {LnaError} from "./error.js";
+import {LnaOptions} from "./options.js";
 
 // After a failed connection attempt, returns the permission that applied to the request.
 // Returns `null` if the request didn't require a permission, or `undefined` if it couldn't be
 // determined.
 async function getPermissionAfterError(
 	hostname: string,
-	statesBefore: LnaPermissionStates
+	statesBefore: LnaPermissionStates,
+	options?: LnaOptions,
 ): Promise<LnaPermissionName | null | undefined> {
 	const statesAfter = await getLnaPermissionStates();
 	for (const [permission, state] of Object.entries(statesAfter) as [LnaPermissionName, PermissionState][]) {
@@ -21,7 +23,7 @@ async function getPermissionAfterError(
 		}
 	}
 
-	return getRequiredPermission(hostname);
+	return getRequiredPermission(hostname, options?.overrides);
 }
 
 // Execute `callback` and try to detect if it fails due to Local Network Access being denied.
@@ -29,6 +31,7 @@ async function getPermissionAfterError(
 export async function detectLna(
 	url: string | URL,
 	callback: (url: string | URL) => unknown,
+	options?: LnaOptions
 ): Promise<unknown> {
 	if (typeof url === 'string') {
 		url = new URL(url);
@@ -37,7 +40,7 @@ export async function detectLna(
 	try {
 		return await callback(url);
 	} catch (e) {
-		const permissionName = await getPermissionAfterError(url.hostname, statesBefore);
+		const permissionName = await getPermissionAfterError(url.hostname, statesBefore, options);
 		const permission = permissionName
 			? await getLnaPermission(permissionName)
 			: permissionName;

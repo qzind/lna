@@ -1,6 +1,7 @@
 import {Address4, Address6} from 'ip-address';
 
-export type AddressSpace = "loopback" | "local" | "public" | "unknown";
+export type KnownAddressSpace = "loopback" | "local" | "public";
+export type AddressSpace = KnownAddressSpace | "unknown";
 
 export function guessAddressSpace(hostname: string): AddressSpace {
 	let host = hostname.toLowerCase();
@@ -23,7 +24,7 @@ export function guessAddressSpace(hostname: string): AddressSpace {
 	return "public";
 }
 
-function getIp4AddressSpace(ip: Address4): AddressSpace {
+function getIp4AddressSpace(ip: Address4): KnownAddressSpace {
 	// Loopback addresses
 	if (ip.isInSubnet(new Address4('127.0.0.0/8'))) return "loopback";
 	// Class A networks
@@ -39,7 +40,7 @@ function getIp4AddressSpace(ip: Address4): AddressSpace {
 	return "public";
 }
 
-function getIp6AddressSpace(ip: Address6): AddressSpace {
+function getIp6AddressSpace(ip: Address6): KnownAddressSpace {
 	if (ip.isLoopback()) return "loopback";
 	if (ip.isLinkLocal()) return "local";
 	if (ip.isInSubnet(new Address6('fc00::/7'))) return "local";

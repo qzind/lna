@@ -1,4 +1,5 @@
 import {AddressSpace, guessAddressSpace, isLessPublic} from "./address-space.js";
+import {AddressSpaceOverrides} from "./options.js";
 
 const LnaJointPermission = 'local-network-access';
 const LnaLoopbackPermission = 'loopback-network';
@@ -46,10 +47,10 @@ export function getRequiredPermissionForAddressSpaces(targetSpace: AddressSpace,
 	return undefined;
 }
 
-export function getRequiredPermission(hostname: string) {
+export function getRequiredPermission(hostname: string, overrides?: AddressSpaceOverrides) {
 	return getRequiredPermissionForAddressSpaces(
-		guessAddressSpace(hostname),
-		guessAddressSpace(window.location.hostname)
+		overrides?.originAddressSpace ?? guessAddressSpace(hostname),
+		overrides?.targetAddressSpace ?? guessAddressSpace(window.location.hostname)
 	)
 }
 
