@@ -3,16 +3,18 @@ import {JointPermissionSupported, SplitPermissionsSupported} from "src/permissio
 import {AddressSpace} from "src/address-space.js";
 
 export function targetUrl(addressSpace: AddressSpace): string {
-	return getWindowProp(`lna_${addressSpace}_url`);
+	return getWindowPropString(`lna_${addressSpace}_url`);
 }
 
 export function targetFailUrl(addressSpace: AddressSpace): string {
-	return getWindowProp(`lna_${addressSpace}_fail_url`);
+	return getWindowPropString(`lna_${addressSpace}_fail_url`);
 }
 
-function getWindowProp(name: string): unknown {
+function getWindowPropString(name: string | keyof Window): string {
 	if (! (name in window)) throw new Error("Missing window." + name);
-	return window[name];
+	const v = window[name as keyof Window];
+	if (typeof v !== 'string') throw new Error(`window.${name} is not a string`);
+	return v;
 }
 
 export const fetchLoopback = () => fetch(targetUrl('loopback'));

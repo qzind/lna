@@ -5,11 +5,11 @@ import {
 	isLessPublic
 } from "./address-space.js";
 import {AddressSpaceOverrides} from "./options.js";
-import {getBrowserQuirks} from "./quirks";
+import {getBrowserQuirks} from "./quirks.js";
 
-const LnaJointPermission = 'local-network-access';
-const LnaLoopbackPermission = 'loopback-network';
-const LnaLocalPermission = 'local-network';
+const LnaJointPermission = 'local-network-access' as const;
+const LnaLoopbackPermission = 'loopback-network' as const;
+const LnaLocalPermission = 'local-network' as const;
 
 export type LnaPermissionName =
 	typeof LnaJointPermission
