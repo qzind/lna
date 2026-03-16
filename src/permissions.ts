@@ -1,5 +1,6 @@
 import {DetectedAddressSpace, guessAddressSpace, isLessPublic} from "./address-space.js";
 import {AddressSpaceOverrides} from "./options.js";
+import {getBrowserQuirks} from "./quirks";
 
 const LnaJointPermission = 'local-network-access';
 const LnaLoopbackPermission = 'loopback-network';
@@ -37,6 +38,7 @@ export const JointPermissionSupported = PermissionSupport[LnaJointPermission];
 export const LnaPermissionsSupported = SplitPermissionsSupported || JointPermissionSupported;
 
 export function getRequiredPermissionForAddressSpaces(targetSpace: DetectedAddressSpace, originSpace: DetectedAddressSpace) {
+	if (getBrowserQuirks().permissionsAreOptIn) return null;
 	const lessPublic = isLessPublic(targetSpace, originSpace);
 
 	if (lessPublic === false || !LnaPermissionsSupported) return null;

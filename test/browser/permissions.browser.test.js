@@ -8,6 +8,7 @@ import {
 	PermissionSupport
 } from "src/permissions";
 import Bowser from 'bowser';
+import {getBrowserQuirks} from "../../src/quirks";
 
 if (typeof window === 'undefined') {
 	throw new Error('This test must be run in a browser environment')
@@ -74,7 +75,7 @@ describe('getRequiredPermissionForAddressSpaces', () => {
 		['unknown', 'loopback', 'loopback-network'], // Assuming 'unknown' can't be 'loopback'
 		['unknown', 'unknown', undefined],
 	];
-	if (!LnaPermissionsSupported) {
+	if (!LnaPermissionsSupported || getBrowserQuirks().permissionsAreOptIn) {
 		cases = cases.map(([from, to]) => [from, to, null]);
 	} else if (!SplitPermissionsSupported) {
 		cases = cases.map(([from, to, p]) => [from, to, p ? 'local-network-access' : p]);
@@ -84,4 +85,3 @@ describe('getRequiredPermissionForAddressSpaces', () => {
 		expect(getRequiredPermissionForAddressSpaces(to, from)).toStrictEqual(expected);
 	})
 });
-
