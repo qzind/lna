@@ -49,8 +49,8 @@ export function getRequiredPermissionForAddressSpaces(targetSpace: AddressSpace,
 
 export function getRequiredPermission(hostname: string, overrides?: AddressSpaceOverrides) {
 	return getRequiredPermissionForAddressSpaces(
+		overrides?.targetAddressSpace ?? guessAddressSpace(window.location.hostname),
 		overrides?.originAddressSpace ?? guessAddressSpace(hostname),
-		overrides?.targetAddressSpace ?? guessAddressSpace(window.location.hostname)
 	)
 }
 
