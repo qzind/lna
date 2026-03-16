@@ -17,3 +17,7 @@ lerna-debug.log*
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+# vitest
+.vitest-attachments/
+__screenshots__
