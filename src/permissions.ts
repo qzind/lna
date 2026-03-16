@@ -1,4 +1,4 @@
-import {AddressSpace, guessAddressSpace, isLessPublic} from "./address-space.js";
+import {DetectedAddressSpace, guessAddressSpace, isLessPublic} from "./address-space.js";
 import {AddressSpaceOverrides} from "./options.js";
 
 const LnaJointPermission = 'local-network-access';
@@ -35,7 +35,7 @@ export const SplitPermissionsSupported = SupportedPermissions[LnaLoopbackPermiss
 export const JointPermissionSupported = SupportedPermissions[LnaJointPermission];
 export const LnaPermissionsSupported = SplitPermissionsSupported || JointPermissionSupported;
 
-export function getRequiredPermissionForAddressSpaces(targetSpace: AddressSpace, originSpace: AddressSpace) {
+export function getRequiredPermissionForAddressSpaces(targetSpace: DetectedAddressSpace, originSpace: DetectedAddressSpace) {
 	const lessPublic = isLessPublic(targetSpace, originSpace);
 
 	if (lessPublic === false || !LnaPermissionsSupported) return null;

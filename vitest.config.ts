@@ -4,6 +4,12 @@ import {BrowserCommand, BrowserInstanceOption} from "vitest/node";
 import * as path from "node:path";
 
 import httpEchoPlugin from "./vite/vite-plugin-http-server.js";
+import {
+	AddressSpace,
+	AddressSpaceOverrides,
+	ChromeAddressSpaceOverridesArgs,
+	FirefoxAddressSpaceOverridesPrefs
+} from "./util/address-space-override.js";
 
 const setPermissions: BrowserCommand<[PermissionDescriptor, PermissionState]> = async (ctx, descriptor, state) => {
 	if (ctx.provider.name !== 'webdriverio') {
@@ -28,42 +34,6 @@ const TargetAddressLoopback = `127.0.0.1:${TargetPortLoopback}`;
 const TargetAddressLocal = `127.0.0.1:${TargetPortLocal}`;
 const TargetAddressPublic = `127.0.0.1:${TargetPortPublic}`;
 
-type AddressSpace = 'public' | 'local' | 'loopback';
-type AddressSpaceOverrides = Record<`${string}:${number}`, AddressSpace>;
-
-function ChromeAddressSpaceOverrides(overrides: AddressSpaceOverrides): WebdriverIO.Capabilities['goog:chromeOptions'] {
-	return {
-		args: [
-			'ip-address-space-overrides=' + Object.entries(overrides)
-				.map(([addr, space]) => `${addr}=${space}`).join(','),
-		]
-	};
-}
-
-function FirefoxAddressOverridePrefEntry(overrides: AddressSpaceOverrides, space: AddressSpace): [string, string] {
-	const prefKey = {
-		'loopback': 'local',
-		'local': 'private',
-		'public': 'public',
-	}[space];
-	return [
-		`network.lna.address_space.${prefKey}.override`,
-		Object.entries(overrides)
-			.filter(([, s]) => s === space)
-			.map(([addr,]) => addr)
-			.join(','),
-	]
-}
-
-function FirefoxAddressSpaceOverrides(overrides: AddressSpaceOverrides): WebdriverIO.Capabilities['moz:firefoxOptions'] {
-	return {
-		prefs: Object.fromEntries([
-			FirefoxAddressOverridePrefEntry(overrides, 'loopback'),
-			FirefoxAddressOverridePrefEntry(overrides, 'local'),
-			FirefoxAddressOverridePrefEntry(overrides, 'public'),
-		])
-	}
-}
 
 function instance(
 	browser: BrowserInstanceOption['browser'],
@@ -88,8 +58,12 @@ function instance(
 		provider: webdriverio({
 			capabilities: {
 				browserVersion: version,
-				'goog:chromeOptions': ChromeAddressSpaceOverrides(addressSpaceOverrides),
-				'moz:firefoxOptions': FirefoxAddressSpaceOverrides(addressSpaceOverrides),
+				'goog:chromeOptions': {
+					args: ChromeAddressSpaceOverridesArgs(addressSpaceOverrides),
+				},
+				'moz:firefoxOptions': {
+					prefs: FirefoxAddressSpaceOverridesPrefs(addressSpaceOverrides),
+				},
 			},
 		}),
 	}

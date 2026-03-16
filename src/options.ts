@@ -1,8 +1,8 @@
-import {KnownAddressSpace} from "./address-space.js";
+import {AddressSpace} from "./address-space.js";
 
 export type AddressSpaceOverrides = {
-	targetAddressSpace?: KnownAddressSpace,
-	originAddressSpace?: KnownAddressSpace,
+	targetAddressSpace?: AddressSpace,
+	originAddressSpace?: AddressSpace,
 }
 
 export type LnaOptions = {

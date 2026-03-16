@@ -1,9 +1,9 @@
 import {Address4, Address6} from 'ip-address';
 
-export type KnownAddressSpace = "loopback" | "local" | "public";
-export type AddressSpace = KnownAddressSpace | "unknown";
+export type AddressSpace = "loopback" | "local" | "public";
+export type DetectedAddressSpace = AddressSpace | "unknown";
 
-export function guessAddressSpace(hostname: string): AddressSpace {
+export function guessAddressSpace(hostname: string): DetectedAddressSpace {
 	let host = hostname.toLowerCase();
 
 	// Remove IPv6 host brackets
@@ -24,7 +24,7 @@ export function guessAddressSpace(hostname: string): AddressSpace {
 	return "public";
 }
 
-function getIp4AddressSpace(ip: Address4): KnownAddressSpace {
+function getIp4AddressSpace(ip: Address4): AddressSpace {
 	// Loopback addresses
 	if (ip.isInSubnet(new Address4('127.0.0.0/8'))) return "loopback";
 	// Class A networks
@@ -40,7 +40,7 @@ function getIp4AddressSpace(ip: Address4): KnownAddressSpace {
 	return "public";
 }
 
-function getIp6AddressSpace(ip: Address6): KnownAddressSpace {
+function getIp6AddressSpace(ip: Address6): AddressSpace {
 	if (ip.isLoopback()) return "loopback";
 	if (ip.isLinkLocal()) return "local";
 	if (ip.isInSubnet(new Address6('fc00::/7'))) return "local";
@@ -56,7 +56,7 @@ function getIp6AddressSpace(ip: Address6): KnownAddressSpace {
 }
 
 // Assumes that loopback is always detected, i.e. "unknown" can't include "loopback"
-export function isLessPublic(lhs: AddressSpace, rhs: AddressSpace): boolean | undefined {
+export function isLessPublic(lhs: DetectedAddressSpace, rhs: DetectedAddressSpace): boolean | undefined {
 	if ((lhs === "loopback" && rhs !== "loopback") ||
 		(lhs === "local" && rhs === "public")) {
 		return true;
