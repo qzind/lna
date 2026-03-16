@@ -7,7 +7,13 @@ import {
 	SupportedPermissions
 } from "../../src/permissions";
 import {getBrowserQuirks} from "../../src/quirks";
-import {fetchPublic, setLocalPermission, setLoopbackPermission, targetUrl} from "./util";
+import {
+	fetchPublic,
+	setLocalPermission,
+	setLoopbackPermission,
+	targetFailUrl,
+	targetUrl
+} from "./util";
 
 if (!window.lna_origin_address_space) {
 	throw new Error('Missing window.lna_origin_address_space')
@@ -35,14 +41,20 @@ async function expectDetectDenied(targetSpace) {
 async function expectDetectGranted(targetSpace) {
 	await expect(detectLna(
 		targetUrl(targetSpace), fetch,
-		{overrides: {originAddressSpace: 'public', targetAddressSpace: 'loopback'}}
+		{overrides: {originAddressSpace: 'public', targetAddressSpace: targetSpace}}
 	)).resolves.toHaveProperty('ok', true);
 }
 
 async function expectDetectUnrestricted(targetSpace) {
-	// TODO: Verify that permission is null, unless we don' want to make that
-	//  kind of guarantee
-	return await expectDetectGranted(targetSpace);
+	// TODO: Verify that permission is null as indication that no permission is needed?
+	await expectDetectGranted(targetSpace);
+	await expect(detectLna(
+		targetFailUrl(targetSpace), fetch,
+		{overrides: {originAddressSpace: 'public', targetAddressSpace: targetSpace}}
+	)).rejects.toThrow(new LnaError({
+		denied: false,
+		permission: undefined,
+	}));
 }
 
 test.runIf(LnaPermissionsSupported)('setPermissions command works', async () => {
@@ -54,7 +66,19 @@ test.runIf(LnaPermissionsSupported)('setPermissions command works', async () => 
 	}
 });
 
-// TODO: Add test for LnaPermissionsSupported && quirks.permissionsAreOptIn: Should return to denied=false
+describe.runIf(LnaPermissionsSupported && quirks.permissionsAreOptIn && originAddressSpace === 'public')('from public origin', () => {
+	test('detects unrestricted LNA to loopback', async () => {
+		await setLocalPermission('denied');
+		await setLoopbackPermission('denied');
+		await expectDetectUnrestricted('loopback');
+	});
+	test('detects unrestricted LNA to local', async () => {
+		await setLocalPermission('denied');
+		await setLoopbackPermission('denied');
+		await expectDetectUnrestricted('local');
+	});
+});
+
 describe.runIf(permissionsEffective && originAddressSpace === 'public')('from public origin', () => {
 	test('unrestricted public request succeeds', async () => {
 		await setLocalPermission('granted');

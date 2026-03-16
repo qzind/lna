@@ -1,5 +1,5 @@
 import type {Vite} from 'vitest/node'
-import * as http from "node:http";
+import * as net from "node:net";
 
 type Config = {
 	host?: string,
@@ -8,16 +8,11 @@ type Config = {
 }
 
 export default function plugin(config: Config): Vite.Plugin {
-	const server = http.createServer((_req, res) => {
-		res.writeHead(200, {
-			'Content-Type': 'text/plain',
-			'Access-Control-Allow-Origin': '*',
-		});
-		res.write(config.message || 'OK');
-		res.end();
+	const server = net.createServer((c) => {
+		c.end();
 	});
 	return {
-		name: 'vite:http-server',
+		name: 'vite:tcp-server',
 		buildStart() {
 			server.listen(config.port, config.host);
 		},

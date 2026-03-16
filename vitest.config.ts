@@ -3,7 +3,8 @@ import {webdriverio} from '@vitest/browser-webdriverio';
 import {BrowserCommand, BrowserInstanceOption} from "vitest/node";
 import * as path from "node:path";
 
-import httpEchoPlugin from "./vite/vite-plugin-http-server.js";
+import httpServerPlugin from "./vite/vite-plugin-http-server.js";
+import tcpServerPlugin from "./vite/vite-plugin-tcp-server.js";
 import {
 	AddressSpace,
 	AddressSpaceOverrides,
@@ -33,7 +34,12 @@ const TargetPortPublic = 10003;
 const TargetAddressLoopback = `127.0.0.1:${TargetPortLoopback}`;
 const TargetAddressLocal = `127.0.0.1:${TargetPortLocal}`;
 const TargetAddressPublic = `127.0.0.1:${TargetPortPublic}`;
-
+const TargetPortLoopbackFail = 11001;
+const TargetPortLocalFail = 11002;
+const TargetPortPublicFail = 11003;
+const TargetAddressLoopbackFail = `127.0.0.1:${TargetPortLoopbackFail}`;
+const TargetAddressLocalFail = `127.0.0.1:${TargetPortLocalFail}`;
+const TargetAddressPublicFail = `127.0.0.1:${TargetPortPublicFail}`;
 
 function instance(
 	browser: BrowserInstanceOption['browser'],
@@ -49,6 +55,9 @@ function instance(
 	addressSpaceOverrides[TargetAddressLoopback] = 'loopback';
 	addressSpaceOverrides[TargetAddressLocal] = 'local';
 	addressSpaceOverrides[TargetAddressPublic] = 'public';
+	addressSpaceOverrides[TargetAddressLoopbackFail] = 'loopback';
+	addressSpaceOverrides[TargetAddressLocalFail] = 'local';
+	addressSpaceOverrides[TargetAddressPublicFail] = 'public';
 
 	return {
 		browser,
@@ -105,6 +114,9 @@ function e2eTest(originAddressSpace: AddressSpace): ViteUserConfig {
 			'lna_loopback_url': JSON.stringify(`http://${TargetAddressLoopback}`),
 			'lna_local_url': JSON.stringify(`http://${TargetAddressLocal}`),
 			'lna_public_url': JSON.stringify(`http://${TargetAddressPublic}`),
+			'lna_loopback_fail_url': JSON.stringify(`http://${TargetAddressLoopbackFail}`),
+			'lna_local_fail_url': JSON.stringify(`http://${TargetAddressLocalFail}`),
+			'lna_public_fail_url': JSON.stringify(`http://${TargetAddressPublicFail}`),
 		},
 		test: {
 			...commonConfig.test,
@@ -150,8 +162,13 @@ export default defineConfig({
 		],
 	},
 	plugins: [
-		httpEchoPlugin({port: TargetPortPublic}),
-		httpEchoPlugin({port: TargetPortLocal}),
-		httpEchoPlugin({port: TargetPortLoopback}),
+		httpServerPlugin({port: TargetPortPublic}),
+		httpServerPlugin({port: TargetPortLocal}),
+		httpServerPlugin({port: TargetPortLoopback}),
+		// TCP server sending empty responses (for testing connection errors that aren't permission
+		// errors)
+		tcpServerPlugin({port: TargetPortPublicFail}),
+		tcpServerPlugin({port: TargetPortLocalFail}),
+		tcpServerPlugin({port: TargetPortLoopbackFail}),
 	],
 })

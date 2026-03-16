@@ -1,9 +1,18 @@
 import {commands} from "vitest/browser";
-import {JointPermissionSupported, SplitPermissionsSupported} from "../../src/permissions";
-import {AddressSpace} from "../../src/address-space";
+import {JointPermissionSupported, SplitPermissionsSupported} from "src/permissions.js";
+import {AddressSpace} from "src/address-space.js";
 
 export function targetUrl(addressSpace: AddressSpace): string {
-	return window[`lna_${addressSpace}_url`];
+	return getWindowProp(`lna_${addressSpace}_url`);
+}
+
+export function targetFailUrl(addressSpace: AddressSpace): string {
+	return getWindowProp(`lna_${addressSpace}_fail_url`);
+}
+
+function getWindowProp(name: string): unknown {
+	if (! (name in window)) throw new Error("Missing window." + name);
+	return window[name];
 }
 
 export const fetchLoopback = () => fetch(targetUrl('loopback'));
