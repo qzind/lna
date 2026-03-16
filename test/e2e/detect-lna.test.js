@@ -7,7 +7,7 @@ import {
 	SupportedPermissions
 } from "../../src/permissions";
 import {getBrowserQuirks} from "../../src/quirks";
-import {fetchPublic, setLocalPermission, setLoopbackPermission} from "./util";
+import {fetchPublic, setLocalPermission, setLoopbackPermission, targetUrl} from "./util";
 
 if (!window.lna_origin_address_space) {
 	throw new Error('Missing window.lna_origin_address_space')
@@ -23,6 +23,26 @@ function expectLnaDeniedError() {
 		denied: true,
 		permission: expect.any(PermissionStatus),
 	})
+}
+
+async function expectDetectDenied(targetSpace) {
+	await expect(() => detectLna(
+		targetUrl(targetSpace), fetch,
+		{overrides: {originAddressSpace: 'public', targetAddressSpace: targetSpace}}
+	)).rejects.toThrow(expectLnaDeniedError());
+}
+
+async function expectDetectGranted(targetSpace) {
+	await expect(detectLna(
+		targetUrl(targetSpace), fetch,
+		{overrides: {originAddressSpace: 'public', targetAddressSpace: 'loopback'}}
+	)).resolves.toHaveProperty('ok', true);
+}
+
+async function expectDetectUnrestricted(targetSpace) {
+	// TODO: Verify that permission is null, unless we don' want to make that
+	//  kind of guarantee
+	return await expectDetectGranted(targetSpace);
 }
 
 test.runIf(LnaPermissionsSupported)('setPermissions command works', async () => {
@@ -45,51 +65,28 @@ describe.runIf(permissionsEffective && originAddressSpace === 'public')('from pu
 	test('detects denied LNA to loopback', async () => {
 		await setLocalPermission('granted');
 		await setLoopbackPermission('denied');
-		await expect(() => detectLna(
-			window.lna_loopback_url, fetch,
-			{overrides: {originAddressSpace: 'public', targetAddressSpace: 'loopback'}}
-		)).rejects.toThrow(expectLnaDeniedError());
+		await expectDetectDenied('loopback');
 	});
 	test('detects denied LNA to local', async () => {
 		await setLoopbackPermission('granted');
 		await setLocalPermission('denied');
-		await expect(() => detectLna(
-			window.lna_local_url, fetch,
-			{overrides: {originAddressSpace: 'public', targetAddressSpace: 'local'}}
-		)).rejects.toThrow(expectLnaDeniedError());
+		await expectDetectDenied('local');
 	});
 
 	test('detects granted LNA to loopback', async () => {
 		await setLocalPermission('denied');
 		await setLoopbackPermission('granted');
-		await expect(detectLna(
-			window.lna_loopback_url, fetch,
-			{overrides: {originAddressSpace: 'public', targetAddressSpace: 'loopback'}}
-		)).resolves.toHaveProperty('ok', true);
+		await expectDetectGranted('loopback');
 	});
 	test('detects granted LNA to local', async () => {
 		await setLoopbackPermission('denied');
 		await setLocalPermission('granted');
-		await expect(detectLna(
-			window.lna_local_url, fetch,
-			{overrides: {originAddressSpace: 'public', targetAddressSpace: 'local'}}
-		)).resolves.toHaveProperty('ok', true);
+		await expectDetectGranted('local');
 	});
 
 	test('detects unrestricted LNA to public', async () => {
 		await setLocalPermission('denied');
 		await setLoopbackPermission('denied');
-		await expect(detectLna(
-			window.lna_public_url, fetch,
-			{overrides: {originAddressSpace: 'public', targetAddressSpace: 'loopback'}}
-		)).resolves.toHaveProperty('ok', true);
-	});
-	test('detects unrestricted LNA to public', async () => {
-		await setLoopbackPermission('denied');
-		await setLocalPermission('denied');
-		await expect(detectLna(
-			window.lna_public_url, fetch,
-			{overrides: {originAddressSpace: 'public', targetAddressSpace: 'local'}}
-		)).resolves.toHaveProperty('ok', true);
+		await expectDetectUnrestricted('public');
 	});
 });
