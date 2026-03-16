@@ -59,7 +59,12 @@ function instance(
 			capabilities: {
 				browserVersion: version,
 				'goog:chromeOptions': {
-					args: ChromeAddressSpaceOverridesArgs(addressSpaceOverrides),
+					args: [
+						// Without this, "Chrome for Testing" builds automatically opt-in to LNA experiments
+						// https://chromium.googlesource.com/chromium/src/+/master/testing/variations/
+						'disable-field-trial-config',
+						...ChromeAddressSpaceOverridesArgs(addressSpaceOverrides),
+					],
 				},
 				'moz:firefoxOptions': {
 					prefs: FirefoxAddressSpaceOverridesPrefs(addressSpaceOverrides),
