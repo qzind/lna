@@ -31,12 +31,45 @@ const TargetAddressPublic = `127.0.0.1:${TargetPortPublic}`;
 type AddressSpace = 'public' | 'local' | 'loopback';
 type AddressSpaceOverrides = Record<`${string}:${number}`, AddressSpace>;
 
+function ChromeAddressSpaceOverrides(overrides: AddressSpaceOverrides): WebdriverIO.Capabilities['goog:chromeOptions'] {
+	return {
+		args: [
+			'ip-address-space-overrides=' + Object.entries(overrides)
+				.map(([addr, space]) => `${addr}=${space}`).join(','),
+		]
+	};
+}
+
+function FirefoxAddressOverridePrefEntry(overrides: AddressSpaceOverrides, space: AddressSpace): [string, string] {
+	const prefKey = {
+		'loopback': 'local',
+		'local': 'private',
+		'public': 'public',
+	}[space];
+	return [
+		`network.lna.address_space.${prefKey}.override`,
+		Object.entries(overrides)
+			.filter(([, s]) => s === space)
+			.map(([addr,]) => addr)
+			.join(','),
+	]
+}
+
+function FirefoxAddressSpaceOverrides(overrides: AddressSpaceOverrides): WebdriverIO.Capabilities['moz:firefoxOptions'] {
+	return {
+		prefs: Object.fromEntries([
+			FirefoxAddressOverridePrefEntry(overrides, 'loopback'),
+			FirefoxAddressOverridePrefEntry(overrides, 'local'),
+			FirefoxAddressOverridePrefEntry(overrides, 'public'),
+		])
+	}
+}
+
 function instance(
 	browser: BrowserInstanceOption['browser'],
 	version?: string,
 	originAddressSpace?: AddressSpace,
 ): BrowserInstanceOption {
-	const chromeOptions: WebdriverIO.Capabilities['goog:chromeOptions'] = {};
 
 	const addressSpaceOverrides: AddressSpaceOverrides = {};
 
@@ -47,11 +80,6 @@ function instance(
 	addressSpaceOverrides[TargetAddressLocal] = 'local';
 	addressSpaceOverrides[TargetAddressPublic] = 'public';
 
-	chromeOptions.args = [
-		'ip-address-space-overrides=' + Object.entries(addressSpaceOverrides)
-			.map(([addr, space]) => `${addr}=${space}`).join(','),
-	];
-
 	return {
 		browser,
 		name: originAddressSpace
@@ -60,7 +88,8 @@ function instance(
 		provider: webdriverio({
 			capabilities: {
 				browserVersion: version,
-				'goog:chromeOptions': chromeOptions,
+				'goog:chromeOptions': ChromeAddressSpaceOverrides(addressSpaceOverrides),
+				'moz:firefoxOptions': FirefoxAddressSpaceOverrides(addressSpaceOverrides),
 			},
 		}),
 	}
