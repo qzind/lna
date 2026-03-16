@@ -3,6 +3,7 @@ import {detectLna, LnaError} from "../../src";
 import {commands} from "vitest/browser";
 import {
 	getLnaPermissionState,
+	getRequiredPermissionForAddressSpace,
 	LnaPermissionsSupported,
 	SupportedPermissions
 } from "../../src/permissions";
@@ -24,36 +25,46 @@ const permissionsEffective = LnaPermissionsSupported && !quirks.permissionsAreOp
 
 const originAddressSpace = window.lna_origin_address_space;
 
-function expectLnaDeniedError() {
-	return new LnaError({
+async function expectDetectDenied(targetSpace) {
+	await expectDetectRejects(targetSpace, new LnaError({
 		denied: true,
 		permission: expect.any(PermissionStatus),
-	})
-}
-
-async function expectDetectDenied(targetSpace) {
-	await expect(() => detectLna(
-		targetUrl(targetSpace), fetch,
-		{overrides: {originAddressSpace: 'public', targetAddressSpace: targetSpace}}
-	)).rejects.toThrow(expectLnaDeniedError());
+	}));
 }
 
 async function expectDetectGranted(targetSpace) {
+	await expectDetectResolves(targetSpace);
+	await expectDetectConnectionFailure(
+		targetSpace,
+		expect.objectContaining({
+			name: getRequiredPermissionForAddressSpace(targetSpace)
+		}),
+	);
+}
+
+async function expectDetectResolves(targetSpace) {
 	await expect(detectLna(
 		targetUrl(targetSpace), fetch,
-		{overrides: {originAddressSpace: 'public', targetAddressSpace: targetSpace}}
+		{overrides: {originAddressSpace, targetAddressSpace: targetSpace}}
 	)).resolves.toHaveProperty('ok', true);
 }
 
-async function expectDetectUnrestricted(targetSpace) {
-	// TODO: Verify that permission is null as indication that no permission is needed?
-	await expectDetectGranted(targetSpace);
+async function expectDetectRejects(targetSpace, error) {
 	await expect(detectLna(
 		targetFailUrl(targetSpace), fetch,
-		{overrides: {originAddressSpace: 'public', targetAddressSpace: targetSpace}}
-	)).rejects.toThrow(new LnaError({
+		{overrides: {originAddressSpace, targetAddressSpace: targetSpace}}
+	)).rejects.toThrow(error);
+}
+
+async function expectDetectUnrestricted(targetSpace) {
+	await expectDetectResolves(targetSpace);
+	await expectDetectConnectionFailure(targetSpace, null);
+}
+
+async function expectDetectConnectionFailure(targetSpace, permission) {
+	await expectDetectRejects(targetSpace, new LnaError({
 		denied: false,
-		permission: undefined,
+		permission,
 	}));
 }
 

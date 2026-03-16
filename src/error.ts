@@ -4,7 +4,7 @@ export class LnaError extends Error {
 
 	constructor({cause, ...options}: {
 		denied: boolean | undefined,
-		permission?: PermissionStatus,
+		permission?: PermissionStatus | null,
 		cause: unknown
 	}) {
 		super(
@@ -20,7 +20,7 @@ export class LnaError extends Error {
 
 	static fromPermission(permission: PermissionStatus | null | undefined, cause: unknown) {
 		if (permission === null) {
-			return new LnaError({cause, denied: false})
+			return new LnaError({cause, denied: false, permission: null})
 		}
 		if (permission === undefined) {
 			return new LnaError({cause, denied: undefined})

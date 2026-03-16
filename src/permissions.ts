@@ -1,4 +1,9 @@
-import {DetectedAddressSpace, guessAddressSpace, isLessPublic} from "./address-space.js";
+import {
+	AddressSpace,
+	DetectedAddressSpace,
+	guessAddressSpace,
+	isLessPublic
+} from "./address-space.js";
 import {AddressSpaceOverrides} from "./options.js";
 import {getBrowserQuirks} from "./quirks";
 
@@ -37,17 +42,28 @@ export const SplitPermissionsSupported = PermissionSupport[LnaLoopbackPermission
 export const JointPermissionSupported = PermissionSupport[LnaJointPermission];
 export const LnaPermissionsSupported = SplitPermissionsSupported || JointPermissionSupported;
 
-export function getRequiredPermissionForAddressSpaces(targetSpace: DetectedAddressSpace, originSpace: DetectedAddressSpace) {
-	if (getBrowserQuirks().permissionsAreOptIn) return null;
-	const lessPublic = isLessPublic(targetSpace, originSpace);
+const permissionsEffective = LnaPermissionsSupported && !getBrowserQuirks().permissionsAreOptIn;
 
-	if (lessPublic === false || !LnaPermissionsSupported) return null;
-	if (lessPublic === undefined) return undefined;
-
+export function getRequiredPermissionForAddressSpace(targetSpace: AddressSpace): LnaPermissionName | null {
+	if (! permissionsEffective) return null;
 	if (!SplitPermissionsSupported) return LnaJointPermission;
-	if (targetSpace === "loopback") return LnaLoopbackPermission;
-	if (targetSpace === "local") return LnaLocalPermission;
-	return undefined;
+	return {
+		'loopback': LnaLoopbackPermission,
+		'local': LnaLocalPermission,
+		'public': null,
+	}[targetSpace] ;
+}
+
+export function getRequiredPermissionForAddressSpaces(targetSpace: DetectedAddressSpace, originSpace: DetectedAddressSpace) {
+	if (! permissionsEffective) return null;
+	const lessPublic = isLessPublic(targetSpace, originSpace);
+	const permission = targetSpace !== 'unknown'
+		? getRequiredPermissionForAddressSpace(targetSpace)
+		: undefined;
+
+	if (lessPublic === false || permission === null) return null;
+	if (lessPublic === undefined) return undefined;
+	return permission;
 }
 
 export function getRequiredPermission(hostname: string, overrides?: AddressSpaceOverrides) {
