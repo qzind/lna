@@ -126,6 +126,7 @@ function e2eTest(originAddressSpace: AddressSpace): ViteUserConfig {
 				api: BrowserApiConfig,
 				enabled: true,
 				headless: true,
+				screenshotFailures: false,
 				commands: browserCommands,
 				instances: browsers.map(([b, v]) => instance(b, v, originAddressSpace)),
 			}
