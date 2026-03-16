@@ -28,11 +28,12 @@ const LnaPermissionNames: LnaPermissionName[] = [
 	LnaLoopbackPermission, LnaLocalPermission, LnaJointPermission,
 ];
 
-export const SupportedPermissions = Object.fromEntries(
+export const PermissionSupport = Object.fromEntries(
 	await Promise.all(LnaPermissionNames.map(async name => [name, await permissionSupported(name)]))
-);
-export const SplitPermissionsSupported = SupportedPermissions[LnaLoopbackPermission] && SupportedPermissions[LnaLocalPermission];
-export const JointPermissionSupported = SupportedPermissions[LnaJointPermission];
+) as Record<LnaPermissionName, boolean>;
+export const SupportedPermissions = Object.entries(PermissionSupport).filter(([, s]) => s).map(([n]) => n) as LnaPermissionName[];
+export const SplitPermissionsSupported = PermissionSupport[LnaLoopbackPermission] && PermissionSupport[LnaLocalPermission];
+export const JointPermissionSupported = PermissionSupport[LnaJointPermission];
 export const LnaPermissionsSupported = SplitPermissionsSupported || JointPermissionSupported;
 
 export function getRequiredPermissionForAddressSpaces(targetSpace: DetectedAddressSpace, originSpace: DetectedAddressSpace) {
@@ -55,14 +56,14 @@ export function getRequiredPermission(hostname: string, overrides?: AddressSpace
 }
 
 export async function getLnaPermission(name: LnaPermissionName) {
-	if (!SupportedPermissions[name]) {
+	if (!PermissionSupport[name]) {
 		return null;
 	}
 	return await navigator.permissions.query({name} as unknown as { name: PermissionName });
 }
 
 export async function getLnaPermissionState(name: LnaPermissionName) {
-	if (!SupportedPermissions[name]) {
+	if (!PermissionSupport[name]) {
 		return null;
 	}
 	return (await getLnaPermission(name))!.state;

@@ -2,36 +2,21 @@ import {describe, expect, test} from 'vitest'
 import {detectLna, LnaError} from "../../src";
 import {commands} from "vitest/browser";
 import {
-	JointPermissionSupported,
+	getLnaPermissionState,
 	LnaPermissionsSupported,
-	SplitPermissionsSupported
+	SupportedPermissions
 } from "../../src/permissions";
+import {getBrowserQuirks} from "../../src/quirks";
+import {fetchPublic, setLocalPermission, setLoopbackPermission} from "./util";
 
 if (!window.lna_origin_address_space) {
 	throw new Error('Missing window.lna_origin_address_space')
 }
 
+const quirks = getBrowserQuirks();
+const permissionsEffective = LnaPermissionsSupported && !quirks.permissionsAreOptIn;
+
 const originAddressSpace = window.lna_origin_address_space;
-
-const fetchLoopback = () => fetch(window.lna_loopback_url);
-const fetchLocal = () => fetch(window.lna_local_url);
-const fetchPublic = () => fetch(window.lna_public_url);
-
-async function setLoopbackPermission(state) {
-	if (SplitPermissionsSupported) {
-		await commands.setPermissions({name: 'loopback-network'}, state);
-	} else if (JointPermissionSupported) {
-		await commands.setPermissions({name: 'local-network-access'}, state);
-	}
-}
-
-async function setLocalPermission(state) {
-	if (SplitPermissionsSupported) {
-		await commands.setPermissions({name: 'local-network'}, state);
-	} else if (JointPermissionSupported) {
-		await commands.setPermissions({name: 'local-network-access'}, state);
-	}
-}
 
 function expectLnaDeniedError() {
 	return new LnaError({
@@ -40,33 +25,17 @@ function expectLnaDeniedError() {
 	})
 }
 
-describe.runIf(! LnaPermissionsSupported)('browser without LNA', () => {
-	test('loopback requests succeed', async () => {
-		await setLoopbackPermission('granted');
-		await expect(fetchLoopback()).resolves.toHaveProperty('ok', true);
-		await setLoopbackPermission('denied');
-		await expect(fetchLoopback()).resolves.toHaveProperty('ok', true);
-	});
+test.runIf(LnaPermissionsSupported)('setPermissions command works', async () => {
+	for (const name of SupportedPermissions) {
+		for (const state of ['prompt', 'granted', 'denied']) {
+			await commands.setPermissions({name}, state);
+			expect(await getLnaPermissionState(name)).toEqual(state);
+		}
+	}
 });
 
-describe.runIf(LnaPermissionsSupported && originAddressSpace === 'public')('from public origin', () => {
-	// Preliminary tests to see if echo server is up & browser handles permissions correctly
-	test('denied loopback request fails', async () => {
-		await setLoopbackPermission('denied');
-		await expect(fetchLoopback).rejects.toThrow();
-	});
-	test('denied local request fails', async () => {
-		await setLocalPermission('denied');
-		await expect(fetchLocal).rejects.toThrow();
-	});
-	test('granted loopback request succeeds', async () => {
-		await setLoopbackPermission('granted');
-		await expect(fetchLoopback()).resolves.toHaveProperty('ok', true);
-	});
-	test('granted local request succeeds', async () => {
-		await setLocalPermission('granted');
-		await expect(fetchLocal()).resolves.toHaveProperty('ok', true);
-	});
+// TODO: Add test for LnaPermissionsSupported && quirks.permissionsAreOptIn: Should return to denied=false
+describe.runIf(permissionsEffective && originAddressSpace === 'public')('from public origin', () => {
 	test('unrestricted public request succeeds', async () => {
 		await setLocalPermission('granted');
 		await setLoopbackPermission('granted');

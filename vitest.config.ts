@@ -84,6 +84,11 @@ const commonConfig: ViteUserConfig = {
 
 const browsers = Object.entries({
 	chrome: [
+		// Last version without LNA implementation
+		'135',
+		// Versions with opt-in LNA
+		'137', '139', '140', // 136 & 138 fail to start
+		// Versions with LNA enabled by default
 		'141', '142', '143', '144', '145', '146',
 	],
 	firefox: [

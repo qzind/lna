@@ -5,7 +5,7 @@ import {
 	getRequiredPermissionForAddressSpaces,
 	LnaPermissionsSupported,
 	SplitPermissionsSupported,
-	SupportedPermissions
+	PermissionSupport
 } from "src/permissions";
 import Bowser from 'bowser';
 
@@ -13,7 +13,7 @@ if (typeof window === 'undefined') {
 	throw new Error('This test must be run in a browser environment')
 }
 
-const supported = Object.entries(SupportedPermissions)
+const supported = Object.entries(PermissionSupport)
 	.filter(([, s]) => s)
 	.map(([name]) => name);
 
@@ -25,10 +25,10 @@ function expectedSupport() {
 	if (browser.satisfies({firefox: '>=150'})) {
 		return ['loopback-network', 'local-network'];
 	}
-	if (browser.satisfies({chrome: '<141'})) {
+	if (browser.satisfies({chrome: '<136'})) {
 		return [];
 	}
-	if (browser.satisfies({chrome: '>=141'}) && browser.satisfies({chrome: '<=144'})) {
+	if (browser.satisfies({chrome: '>=136'}) && browser.satisfies({chrome: '<=144'})) {
 		return ['local-network-access'];
 	}
 	if (browser.satisfies({chrome: '>144'})) {
