@@ -48,7 +48,7 @@ try {
 } catch (e) {
 	if (e instanceof LnaError) {
 		if (e.denied) {
-			// Teach the user a lesson about clicking yes on popups
+			// Teach the user a lesson about clicking "no" on popups
 		} else {
 			// Failed for another reason, display error message
 		}
