@@ -40,10 +40,32 @@ export async function detectLna(
 	try {
 		return await callback(url);
 	} catch (e) {
+		if (isNonConnectionError(e)) {
+			throw e;
+		}
 		const permissionName = await getPermissionAfterError(url.hostname, statesBefore, options);
 		const permission = permissionName
 			? await getLnaPermission(permissionName)
 			: permissionName;
 		throw LnaError.fromPermission(permission, e);
+	}
+}
+
+export function isNonConnectionError(e: unknown): boolean {
+	return isFetchNonConnectionError(e) ?? isWebSocketNonConnectionError(e);
+}
+
+export function isFetchNonConnectionError(e: unknown): boolean {
+	if (!(e instanceof TypeError)) {
+		return true;
+	}
+	return !!e.message.match(
+		/Failed to parse URL|not a valid URL|is not supported/
+	);
+}
+
+export function isWebSocketNonConnectionError(e: unknown): boolean | undefined {
+	if (e instanceof SyntaxError) {
+		return true;
 	}
 }

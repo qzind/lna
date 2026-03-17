@@ -125,3 +125,48 @@ describe.runIf(permissionsEffective && originAddressSpace === 'public')('from pu
 		await expectDetectUnrestricted('public');
 	});
 });
+
+async function expectNonLnaError(promise) {
+	let error;
+	try {
+		await promise;
+	} catch (e) {
+		error = e;
+	}
+	expect(error).toBeDefined();
+	expect(error).toBeInstanceOf(Error);
+	expect(error).not.toBeInstanceOf(LnaError);
+}
+
+describe('detects non-network errors', () => {
+	describe('fetch', () => {
+		test('invalid URL', async () => {
+			await expectNonLnaError(detectLna(
+				'_127.0.0.1_', window.fetch,
+			));
+		});
+		test('aborted', async () => {
+			const controller = new AbortController();
+			controller.abort();
+			await expectNonLnaError(detectLna(
+				targetUrl('public'),
+				url => window.fetch(url, {
+					signal: controller.signal,
+				}),
+			));
+		});
+	})
+
+	describe('WebSocket', () => {
+		test('invalid URL', async () => {
+			await expectNonLnaError(detectLna(
+				'-very- invalid =', url => new WebSocket(url),
+			));
+		});
+		test('invalid protocol', async () => {
+			await expectNonLnaError(detectLna(
+				'ftp://127.0.0.1', url => new WebSocket(url),
+			));
+		});
+	})
+})

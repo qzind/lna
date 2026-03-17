@@ -18,9 +18,10 @@ declare async function detectLna(
 ): Promise<unknown>
 ```
 
-If the request fails, an `LnaError` instance is thrown with the following properties:
+This calls `callback` with the given `url`.
+If the callback throws an error that indicates connection failure, `detectLna` throws an `LnaError` instance with the following properties:
 
-- `denied: boolean | undefined` indicates whether permissions for this request were denied, or
+- `denied: boolean | undefined` indicates whether permission for this request was denied, or
   `undefined` if unknown
 - `permission: PermissionStatus | null | undefined` the applicable permission query result. `null`
   if no permission is required, `undefined` if unknown
