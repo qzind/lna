@@ -1,5 +1,4 @@
 import {defineConfig, ViteUserConfig} from 'vitest/config'
-import {webdriverio} from '@vitest/browser-webdriverio';
 import {BrowserCommand, BrowserInstanceOption} from "vitest/node";
 import * as path from "node:path";
 
@@ -11,6 +10,7 @@ import {
 	ChromeAddressSpaceOverridesArgs,
 	FirefoxAddressSpaceOverridesPrefs
 } from "./util/address-space-override.js";
+import {webdriverio} from "./vite/webdriverio-provider.js";
 
 const setPermissions: BrowserCommand<[PermissionDescriptor, PermissionState]> = async (ctx, descriptor, state) => {
 	if (ctx.provider.name !== 'webdriverio') {
