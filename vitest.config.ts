@@ -10,6 +10,7 @@ import {
 	ChromeAddressSpaceOverridesArgs,
 	FirefoxAddressSpaceOverridesPrefs
 } from "./util/address-space-override.js";
+import seleniumDockerProvider from "./vite/selenium-docker-provider/index.js";
 import {webdriverio} from "./vite/webdriverio-provider.js";
 
 const setPermissions: BrowserCommand<[PermissionDescriptor, PermissionState]> = async (ctx, descriptor, state) => {
@@ -41,6 +42,18 @@ const TargetAddressLoopbackFail = `127.0.0.1:${TargetPortLoopbackFail}`;
 const TargetAddressLocalFail = `127.0.0.1:${TargetPortLocalFail}`;
 const TargetAddressPublicFail = `127.0.0.1:${TargetPortPublicFail}`;
 
+function providerForBrowser(browser: BrowserInstanceOption['browser']) {
+	switch (browser) {
+		case 'edge':
+			return seleniumDockerProvider;
+		case 'chrome':
+		case 'firefox':
+			return webdriverio;
+		default:
+			throw new Error(`Unsupported browser: ${browser}`);
+	}
+}
+
 function instance(
 	browser: BrowserInstanceOption['browser'],
 	version?: string,
@@ -59,17 +72,19 @@ function instance(
 	addressSpaceOverrides[TargetAddressLocalFail] = 'local';
 	addressSpaceOverrides[TargetAddressPublicFail] = 'public';
 
+	const provider = providerForBrowser(browser);
 	return {
 		browser,
 		name: originAddressSpace
 			? `${browser}-${version}-${originAddressSpace}`
 			: `${browser}-${version}`,
-		provider: webdriverio({
+		provider: provider({
 			capabilities: {
 				browserVersion: version,
 				'goog:chromeOptions': {
 					args: [
-						// Without this, "Chrome for Testing" builds automatically opt-in to LNA experiments
+						// Without this, "Chrome for Testing" builds automatically opt-in to LNA
+						// experiments
 						// https://chromium.googlesource.com/chromium/src/+/master/testing/variations/
 						'disable-field-trial-config',
 						...ChromeAddressSpaceOverridesArgs(addressSpaceOverrides),

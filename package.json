@@ -12,6 +12,7 @@
     "ip-address": "^10.1.0"
   },
   "devDependencies": {
+    "@docker/node-sdk": "^0.0.17",
     "@vitest/browser-webdriverio": "^4.1.0",
     "@wdio/cli": "^9.26.1",
     "typescript": "^5.9.3",
