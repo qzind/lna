@@ -170,6 +170,7 @@ export default defineConfig({
 						enabled: true,
 						headless: true,
 						commands: browserCommands,
+						screenshotFailures: false,
 						instances: browsers.map(([b, v]) => instance(b, v)),
 					}
 				}
