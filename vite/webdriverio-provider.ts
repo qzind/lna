@@ -26,7 +26,7 @@ function seleniumProvider(options: Options): BrowserProviderOption<Options> {
 		supportedBrowser: webdriverio().supportedBrowser,
 		options,
 		providerFactory(project) {
-			return new WebdriverBrowserProvider(project, options);
+			return new SeleniumWebdriverIOProvider(project, options);
 		},
 	});
 }

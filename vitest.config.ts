@@ -169,6 +169,7 @@ export default defineConfig({
 					...commonConfig.test,
 					name: 'browser',
 					dir: 'test/browser',
+					api: BrowserApiConfig,
 					browser: {
 						enabled: true,
 						headless: true,
