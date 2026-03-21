@@ -41,10 +41,22 @@ export class SeleniumDockerService {
 	}
 
 	public get browserName(): string {
-		if (!this.options.browser.name) {
+		const name = this.options.browser.name
+		if (!name) {
 			throw new Error("No browser name specified");
 		}
-		return this.options.browser.name;
+		switch (name) {
+			case 'MicrosoftEdge':
+			case 'edge':
+			case 'msedge':
+				return 'edge';
+			case 'firefox':
+			case 'chrome':
+			case 'chromium':
+				return name;
+			default:
+				throw new Error(`Unsupported browser "${name}"`);
+		}
 	}
 
 	constructor(
@@ -240,7 +252,11 @@ export class SeleniumDockerService {
 		if (!this.containerId) return;
 		debug?.("Trying to stop container " + this.containerId)
 		const docker = await this.docker();
-		await docker.containerStop(this.containerId);
+		try {
+			await docker.containerStop(this.containerId);
+		} catch (e) {
+			this.logger.error(`Failed to stop container ${this.containerId}, it may have already been stopped`, e);
+		}
 
 		for (let i = 0; i < 20; i++) {
 			const inspect = await docker.containerInspect(this.containerId);

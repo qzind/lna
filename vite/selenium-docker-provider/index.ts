@@ -50,7 +50,7 @@ class SeleniumDockerBrowserProvider extends SeleniumProvider<Options> {
 			docker: options.docker,
 			headless: project.config.browser.headless,
 			browser: {
-				name: options.capabilities.browserName,
+				name: options.capabilities.browserName ?? project.config.browser.name,
 				version: options.capabilities.browserVersion,
 			},
 		});
