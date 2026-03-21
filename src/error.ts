@@ -14,6 +14,7 @@ export class LnaError extends Error {
 			,
 			{cause}
 		)
+		Object.setPrototypeOf(this, LnaError.prototype);
 		this.name = this.constructor.name;
 		Object.assign(this, options);
 	}
