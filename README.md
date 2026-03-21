@@ -5,6 +5,7 @@ JS client-side helpers for evaluating Local Network Access restrictions.
 Currently tested on
 - Chrome 135 to 146
 - Firefox 148 and Firefox Nightly 150
+- Safari 26.3
 
 ## API
 

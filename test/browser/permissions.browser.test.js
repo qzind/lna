@@ -20,6 +20,9 @@ const supported = Object.entries(PermissionSupport)
 
 function expectedSupport() {
 	const browser = Bowser.getParser(window.navigator.userAgent);
+	if (browser.isBrowser('safari')) {
+		return [];
+	}
 	if (browser.satisfies({firefox: '<150'})) {
 		return [];
 	}

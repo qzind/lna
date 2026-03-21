@@ -77,7 +77,7 @@ test.runIf(LnaPermissionsSupported)('setPermissions command works', async () => 
 	}
 });
 
-describe.runIf(LnaPermissionsSupported && quirks.permissionsAreOptIn && originAddressSpace === 'public')('from public origin', () => {
+describe.runIf(!permissionsEffective && originAddressSpace === 'public')('from public origin', () => {
 	test('detects unrestricted LNA to loopback', async () => {
 		await setLocalPermission('denied');
 		await setLoopbackPermission('denied');

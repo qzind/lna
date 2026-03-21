@@ -3,7 +3,6 @@ import {BrowserCommand, BrowserInstanceOption} from "vitest/node";
 import * as path from "node:path";
 
 import httpServerPlugin from "./vite/vite-plugin-http-server.js";
-import tcpServerPlugin from "./vite/vite-plugin-tcp-server.js";
 import {
 	AddressSpace,
 	AddressSpaceOverrides,
@@ -49,6 +48,12 @@ function providerForBrowser(browser: BrowserInstanceOption['browser']) {
 		case 'chrome':
 		case 'firefox':
 			return webdriverioProvider;
+		case 'safari':
+			return (opts: WebdriverIOProviderOptions) => webdriverioProvider({
+				...opts,
+				hostname: 'localhost',
+				port: 4444,
+			});
 		default:
 			throw new Error(`Unsupported browser: ${browser}`);
 	}
@@ -122,6 +127,9 @@ const browsers = Object.entries({
 	edge: [
 		'145', '144',
 	],
+	safari: [
+		'stable',
+	],
 }).flatMap(([browser, versions]) => versions.map(version => [browser, version]));
 
 function e2eTest(originAddressSpace: AddressSpace): ViteUserConfig {
@@ -186,10 +194,10 @@ export default defineConfig({
 		httpServerPlugin({port: TargetPortPublic}),
 		httpServerPlugin({port: TargetPortLocal}),
 		httpServerPlugin({port: TargetPortLoopback}),
-		// TCP server sending empty responses (for testing connection errors that aren't permission
+		// HTTP server sending empty responses (for testing connection errors that aren't permission
 		// errors)
-		tcpServerPlugin({port: TargetPortPublicFail}),
-		tcpServerPlugin({port: TargetPortLocalFail}),
-		tcpServerPlugin({port: TargetPortLoopbackFail}),
+		httpServerPlugin({respond: false, port: TargetPortPublicFail}),
+		httpServerPlugin({respond: false, port: TargetPortLocalFail}),
+		httpServerPlugin({respond: false, port: TargetPortLoopbackFail}),
 	],
 })
