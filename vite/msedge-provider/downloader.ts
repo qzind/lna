@@ -11,7 +11,6 @@ import {createDebugger} from "vitest/node";
 
 const debug = createDebugger('vitest:browser:edge:downloader');
 const DefaultRepoUrl = 'https://packages.microsoft.com/repos/edge/';
-const DefaultBinPath = 'opt/microsoft/msedge/microsoft-edge';
 
 const promises: Record<string, Promise<DownloadResult>> = {};
 export type DownloadOptions = {
@@ -41,7 +40,10 @@ class MsEdgeDownloader {
 	}
 
 	protected get binPath(): string {
-		return path.join(this.destDir, this.options.binPath ?? DefaultBinPath);
+		const defaultBinPath = this.channel === 'stable'
+			? 'opt/microsoft/msedge/microsoft-edge'
+			: `opt/microsoft/msedge-${this.channel}/microsoft-edge-${this.channel}`
+		return path.join(this.destDir, this.options.binPath ?? defaultBinPath);
 	}
 
 	protected get channel() {

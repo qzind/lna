@@ -61,7 +61,7 @@ function providerForBrowser(browser: BrowserInstanceOption['browser']) {
 
 function instance(
 	browser: BrowserInstanceOption['browser'],
-	version?: string,
+	version?: string | [string, string],
 	originAddressSpace?: AddressSpace,
 ): BrowserInstanceOption {
 
@@ -77,6 +77,11 @@ function instance(
 	addressSpaceOverrides[TargetAddressLocalFail] = 'local';
 	addressSpaceOverrides[TargetAddressPublicFail] = 'public';
 
+	let channel = undefined;
+	if (version instanceof Array) {
+		[channel, version] = version;
+	}
+
 	const provider = providerForBrowser(browser);
 	return {
 		browser,
@@ -84,6 +89,7 @@ function instance(
 			? `${browser}-${version}-${originAddressSpace}`
 			: `${browser}-${version}`,
 		provider: provider({
+			channel,
 			capabilities: {
 				browserVersion: version,
 				'goog:chromeOptions': {
@@ -93,6 +99,11 @@ function instance(
 						// https://chromium.googlesource.com/chromium/src/+/master/testing/variations/
 						'disable-field-trial-config',
 						...ChromeAddressSpaceOverridesArgs(addressSpaceOverrides),
+					],
+				},
+				'ms:edgeOptions': {
+					args: [
+						'disable-field-trial-config',
 					],
 				},
 				'moz:firefoxOptions': {
@@ -125,7 +136,8 @@ const browsers = Object.entries({
 		'nightly_150.0a1'
 	],
 	edge: [
-		'145', '144',
+		'144', '145', '146',
+		['beta', '147']
 	],
 	safari: [
 		'stable',
