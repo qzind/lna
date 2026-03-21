@@ -10,8 +10,8 @@ import {
 	ChromeAddressSpaceOverridesArgs,
 	FirefoxAddressSpaceOverridesPrefs
 } from "./util/address-space-override.js";
-import seleniumDockerProvider from "./vite/selenium-docker-provider/index.js";
-import {webdriverioProvider} from "./vite/webdriverio-provider.js";
+import {webdriverioProvider, WebdriverIOProviderOptions} from "./vite/webdriverio-provider.js";
+import {msEdgeProvider} from "./vite/msedge-provider/provider.js";
 
 const setPermissions: BrowserCommand<[PermissionDescriptor, PermissionState]> = async (ctx, descriptor, state) => {
 	if (ctx.provider.name !== 'webdriverio') {
@@ -45,7 +45,7 @@ const TargetAddressPublicFail = `127.0.0.1:${TargetPortPublicFail}`;
 function providerForBrowser(browser: BrowserInstanceOption['browser']) {
 	switch (browser) {
 		case 'edge':
-			return seleniumDockerProvider;
+			return msEdgeProvider;
 		case 'chrome':
 		case 'firefox':
 			return webdriverioProvider;

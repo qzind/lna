@@ -15,6 +15,8 @@
     "@docker/node-sdk": "^0.0.17",
     "@vitest/browser-webdriverio": "^4.1.0",
     "@wdio/cli": "^9.26.1",
+    "apt-parser": "^1.5.1",
+    "compare-versions": "^6.1.1",
     "typescript": "^5.9.3",
     "vitest": "^4.1",
     "webdriverio": "^9.25.0"
