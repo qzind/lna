@@ -118,7 +118,10 @@ const browsers = Object.entries({
 	firefox: [
 		'stable_148.0',
 		'nightly_150.0a1'
-	]
+	],
+	edge: [
+		'145', '144',
+	],
 }).flatMap(([browser, versions]) => versions.map(version => [browser, version]));
 
 function e2eTest(originAddressSpace: AddressSpace): ViteUserConfig {

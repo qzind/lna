@@ -26,13 +26,13 @@ function expectedSupport() {
 	if (browser.satisfies({firefox: '>=150'})) {
 		return ['loopback-network', 'local-network'];
 	}
-	if (browser.satisfies({chrome: '<136'})) {
+	if (browser.satisfies({chrome: '<136', edge: '<136'})) {
 		return [];
 	}
-	if (browser.satisfies({chrome: '>=136'}) && browser.satisfies({chrome: '<=144'})) {
+	if (browser.satisfies({chrome: '>=136', edge: '>=136'}) && browser.satisfies({chrome: '<=144', edge: '<=144'})) {
 		return ['local-network-access'];
 	}
-	if (browser.satisfies({chrome: '>144'})) {
+	if (browser.satisfies({chrome: '>144', edge: '>144'})) {
 		return ['local-network-access', 'loopback-network', 'local-network'];
 	}
 	throw new Error(`Unknown browser ${browser.getBrowserName()} ${browser.getBrowserVersion()}`);
