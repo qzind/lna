@@ -26,7 +26,7 @@ const permissionsEffective = LnaPermissionsSupported && !quirks.permissionsAreOp
 const originAddressSpace = window.lna_origin_address_space;
 
 async function expectDetectDenied(targetSpace) {
-	await expectDetectRejects(targetSpace, new LnaError({
+	await expectDetectRejects(targetUrl(targetSpace), targetSpace, new LnaError({
 		denied: true,
 		permission: expect.any(PermissionStatus),
 	}));
@@ -49,9 +49,9 @@ async function expectDetectResolves(targetSpace) {
 	)).resolves.toHaveProperty('ok', true);
 }
 
-async function expectDetectRejects(targetSpace, error) {
+async function expectDetectRejects(url, targetSpace, error) {
 	await expect(detectLna(
-		targetFailUrl(targetSpace), fetch,
+		url, fetch,
 		{overrides: {originAddressSpace, targetAddressSpace: targetSpace}}
 	)).rejects.toThrow(error);
 }
@@ -62,7 +62,7 @@ async function expectDetectUnrestricted(targetSpace) {
 }
 
 async function expectDetectConnectionFailure(targetSpace, permission) {
-	await expectDetectRejects(targetSpace, new LnaError({
+	await expectDetectRejects(targetFailUrl(targetSpace), targetSpace, new LnaError({
 		denied: false,
 		permission,
 	}));
