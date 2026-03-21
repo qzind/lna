@@ -11,7 +11,7 @@ import {
 	FirefoxAddressSpaceOverridesPrefs
 } from "./util/address-space-override.js";
 import seleniumDockerProvider from "./vite/selenium-docker-provider/index.js";
-import {webdriverio} from "./vite/webdriverio-provider.js";
+import {webdriverioProvider} from "./vite/webdriverio-provider.js";
 
 const setPermissions: BrowserCommand<[PermissionDescriptor, PermissionState]> = async (ctx, descriptor, state) => {
 	if (ctx.provider.name !== 'webdriverio') {
@@ -48,7 +48,7 @@ function providerForBrowser(browser: BrowserInstanceOption['browser']) {
 			return seleniumDockerProvider;
 		case 'chrome':
 		case 'firefox':
-			return webdriverio;
+			return webdriverioProvider;
 		default:
 			throw new Error(`Unsupported browser: ${browser}`);
 	}

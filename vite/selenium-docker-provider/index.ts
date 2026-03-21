@@ -1,10 +1,10 @@
-import {WebdriverProviderOptions} from '@vitest/browser-webdriverio';
-import {BrowserProviderOption, createDebugger, TestProject} from "vitest/node";
+import {BrowserProviderOption, TestProject} from "vitest/node";
 import {defineBrowserProvider} from '@vitest/browser'
-import {SeleniumWebdriverIOProvider} from "../webdriverio-provider.js";
 import {SeleniumDockerService} from "../../testing/selenium-docker.js";
+import {SeleniumProvider} from "../selenium-provider.js";
+import {WebdriverIOProviderOptions} from "../webdriverio-provider.js";
 
-type Options = WebdriverProviderOptions & {
+type Options = WebdriverIOProviderOptions & {
 	docker?: {
 		host?: string
 	}
@@ -15,7 +15,7 @@ type Options = WebdriverProviderOptions & {
 	}
 }
 
-export default function provider(options: Options): BrowserProviderOption<Options> {
+export default function provider(options: Options): BrowserProviderOption {
 	return defineBrowserProvider({
 		name: 'webdriverio-selenium-docker',
 		supportedBrowser: ['firefox', 'chrome', 'edge', 'safari'],
@@ -26,7 +26,7 @@ export default function provider(options: Options): BrowserProviderOption<Option
 	})
 }
 
-class SeleniumDockerBrowserProvider extends SeleniumWebdriverIOProvider {
+class SeleniumDockerBrowserProvider extends SeleniumProvider<Options> {
 	protected _options: Options
 	protected service: SeleniumDockerService;
 

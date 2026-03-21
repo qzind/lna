@@ -4,49 +4,44 @@ import {
 	WebdriverProviderOptions
 } from '@vitest/browser-webdriverio';
 import {BrowserProviderOption, createDebugger, TestProject} from "vitest/node";
-import type {Capabilities} from "@wdio/types";
 import {defineBrowserProvider} from '@vitest/browser'
+import {Capabilities} from "@wdio/types";
 
-const debug = createDebugger('vitest:browser:wdio-selenium')
+const debug = createDebugger('vitest:browser:wdio')
 
-type Options = WebdriverProviderOptions;
+type Options = WebdriverProviderOptions & {
+	capabilities: WebdriverIO.Capabilities,
+};
+export type WebdriverIOProviderOptions = Options;
 
-function provider(options: Options): BrowserProviderOption<Options> {
-	if (options.hostname) {
-		return seleniumProvider(options)
-	} else {
-		return webdriverio(options)
-	}
-}
-
-// Work around for broken edge browser name with Selenium in @vitest/browser-webdriverio
-function seleniumProvider(options: Options): BrowserProviderOption<Options> {
-	return defineBrowserProvider({
-		name: 'webdriverio-selenium',
+export function webdriverioProvider(options: Options): BrowserProviderOption {
+	return defineBrowserProvider<Options>({
+		name: 'webdriverio',
 		supportedBrowser: webdriverio().supportedBrowser,
 		options,
 		providerFactory(project) {
-			return new SeleniumWebdriverIOProvider(project, options);
+			return new WebdriverIOProvider(project, options);
 		},
 	});
 }
 
-
-export class SeleniumWebdriverIOProvider extends WebdriverBrowserProvider {
+// Base class, mostly copy-pasted from Vitest's original WebdriverBrowserProvider, but with some
+// fields made accessible to subclasses. No change in behavior from parent class
+export class WebdriverIOProvider<O extends Options = WebdriverIOProviderOptions> extends WebdriverBrowserProvider {
 	protected _project: TestProject
-	protected _options: Options
+	protected _options: O
 	protected _closing: boolean = false
 
 	constructor(
 		project: TestProject,
-		options: Options,
+		options: O,
 	) {
 		super(project, options)
 		this._project = project
 		this._options = options
 	}
 
-	getBrowserName(): string {
+	public getBrowserName(): string {
 		return this._project.config.browser.name
 	}
 
@@ -58,44 +53,47 @@ export class SeleniumWebdriverIOProvider extends WebdriverBrowserProvider {
 			return this.browser
 		}
 
-		const remoteOptions: Capabilities.WebdriverIOConfig = {
-			logLevel: 'silent',
-			...this._options,
-			capabilities: this.getCapabilities(),
+		const options = this._project.config.browser
+
+		if (this.getBrowserName() === 'safari') {
+			if (options.headless) {
+				throw new Error(
+					'You\'ve enabled headless mode for Safari but it doesn\'t currently support it.',
+				)
+			}
 		}
 
 		const {remote} = await import('webdriverio')
 
+		const remoteOptions: Capabilities.WebdriverIOConfig = {
+			logLevel: 'silent',
+			...this._options,
+			capabilities: this.makeCapabilities(),
+		}
+
 		debug?.('[%s] opening the browser with options: %O', this.getBrowserName(), remoteOptions)
+		// TODO: close everything, if browser is closed from the outside
 		this.browser = await remote(remoteOptions)
 		await this.throwIfClosing()
 
 		return this.browser
 	}
 
-	// Mirrored from superclass's `buildCapabilities`, but incorporating
-	// the seleniumBrowserName fix. Method renamed because of conflict with
-	// the private superclass method.
-	protected getCapabilities() {
+	protected makeCapabilities() {
 		const capabilities: Capabilities.WebdriverIOConfig['capabilities'] = {
 			...this._options?.capabilities,
-			browserName: this.seleniumBrowserName(),
+			browserName: this.getBrowserName(),
 		}
 
-		const headlessMap: Record<string, [keyof WebdriverIO.Capabilities, string[]]> = {
+		const headlessMap = {
 			chrome: ['goog:chromeOptions', ['headless', 'disable-gpu']],
 			firefox: ['moz:firefoxOptions', ['-headless']],
 			edge: ['ms:edgeOptions', ['--headless']],
-		}
+		} as const
 
-		const browser = this.getBrowserName()
 		const options = this._project.config.browser
-		if (options.headless) {
-			if (!(browser in headlessMap)) {
-				throw new Error(
-					`Headless mode is not supported for browser "${browser}"`
-				)
-			}
+		const browser = this.getBrowserName()
+		if (browser !== 'safari' && options.headless) {
 			const [key, args] = headlessMap[browser]
 			const currentValues = (this._options?.capabilities as any)?.[key] || {}
 			const newArgs = [...(currentValues.args || []), ...args]
@@ -122,8 +120,7 @@ export class SeleniumWebdriverIOProvider extends WebdriverBrowserProvider {
 				: 'ms:edgeOptions'
 			const args = capabilities[key]?.args || []
 
-			// NodeJS equivalent defaults:
-			// https://nodejs.org/en/learn/getting-started/debugging#enable-inspector
+			// NodeJS equivalent defaults: https://nodejs.org/en/learn/getting-started/debugging#enable-inspector
 			const port = inspector.port || 9229
 			const host = inspector.host || '127.0.0.1'
 
@@ -141,22 +138,6 @@ export class SeleniumWebdriverIOProvider extends WebdriverBrowserProvider {
 		return capabilities
 	}
 
-	protected seleniumBrowserName(): string {
-		const browser = this.getBrowserName()
-		if (!this.getSupportedBrowsers().includes(browser)) {
-			throw new Error(`Unsupported browser: ${browser}`)
-		}
-		switch (browser) {
-			case 'edge':
-				// Fixes bug in original vitest/browser-webdriverio: Selenium
-				// expects "MicrosoftEdge" in capabilities, not "edge"
-				return 'MicrosoftEdge'
-			default:
-				return browser
-		}
-	}
-
-	// Mirrored from superclass because it's private
 	protected async throwIfClosing(action?: string) {
 		if (this._closing) {
 			debug?.(`[%s] provider was closed, cannot perform the action${action ? ` ${action}` : ''}`, this.getBrowserName())
@@ -170,5 +151,3 @@ export class SeleniumWebdriverIOProvider extends WebdriverBrowserProvider {
 		await super.close()
 	}
 }
-
-export {provider as webdriverio}
