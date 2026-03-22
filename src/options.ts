@@ -7,4 +7,5 @@ export type AddressSpaceOverrides = {
 
 export type LnaOptions = {
 	overrides?: AddressSpaceOverrides,
+	isWebSocket?: boolean,
 }

@@ -66,10 +66,13 @@ export function getRequiredPermissionForAddressSpaces(targetSpace: DetectedAddre
 	return permission;
 }
 
-export function getRequiredPermission(hostname: string, overrides?: AddressSpaceOverrides) {
+export function getRequiredPermission(url: URL, overrides?: AddressSpaceOverrides) {
+	if ((url.protocol === 'ws:' || url.protocol === 'wss:') && getBrowserQuirks().webSocketsUnrestricted) {
+		return null;
+	}
 	return getRequiredPermissionForAddressSpaces(
 		overrides?.targetAddressSpace ?? guessAddressSpace(window.location.hostname),
-		overrides?.originAddressSpace ?? guessAddressSpace(hostname),
+		overrides?.originAddressSpace ?? guessAddressSpace(url.hostname),
 	)
 }
 

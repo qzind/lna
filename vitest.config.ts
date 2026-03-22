@@ -99,6 +99,13 @@ function instance(
 						// https://chromium.googlesource.com/chromium/src/+/master/testing/variations/
 						'disable-field-trial-config',
 						...ChromeAddressSpaceOverridesArgs(addressSpaceOverrides),
+						// WebSocket restrictions will be enabled in 147 stable release, so enable
+						// it manually for tested pre-release. See
+						// https://groups.google.com/a/chromium.org/g/blink-dev/c/O6GMKt44Ups
+						// https://docs.google.com/document/d/1GHbpRTCnfDXq9o8WKyrG7oPAiWC6Yozac-PvbfO3KoY
+						...(browser === 'chrome' && parseInt(version) >= 147 ?
+							['--enable-features=LocalNetworkAccessChecksWebSockets']
+							: []),
 					],
 				},
 				'ms:edgeOptions': {
@@ -130,6 +137,8 @@ const browsers = Object.entries({
 		'137', '139', '140', // 136 & 138 fail to start
 		// Versions with LNA enabled by default
 		'141', '142', '143', '144', '145', '146',
+		// First version with WebSocket restrictions enabled
+		'147',
 	],
 	firefox: [
 		'stable_148.0',

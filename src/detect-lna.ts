@@ -12,7 +12,7 @@ import {LnaOptions} from "./options.js";
 // Returns `null` if the request didn't require a permission, or `undefined` if it couldn't be
 // determined.
 async function getPermissionAfterError(
-	hostname: string,
+	url: URL,
 	statesBefore: LnaPermissionStates,
 	options?: LnaOptions,
 ): Promise<LnaPermissionName | null | undefined> {
@@ -23,7 +23,7 @@ async function getPermissionAfterError(
 		}
 	}
 
-	return getRequiredPermission(hostname, options?.overrides);
+	return getRequiredPermission(url, options?.overrides);
 }
 
 // Execute `callback` and try to detect if it fails due to Local Network Access being denied.
@@ -36,6 +36,13 @@ export async function detectLna(
 	if (typeof url === 'string') {
 		url = new URL(url);
 	}
+	if (options?.isWebSocket && url.protocol === 'http:') {
+		url.protocol = 'ws:';
+	}
+	if (options?.isWebSocket && url.protocol === 'https:') {
+		url.protocol = 'wss:';
+	}
+
 	const statesBefore = await getLnaPermissionStates();
 	try {
 		return await callback(url);
@@ -43,7 +50,7 @@ export async function detectLna(
 		if (isNonConnectionError(e)) {
 			throw e;
 		}
-		const permissionName = await getPermissionAfterError(url.hostname, statesBefore, options);
+		const permissionName = await getPermissionAfterError(url, statesBefore, options);
 		const permission = permissionName
 			? await getLnaPermission(permissionName)
 			: permissionName;
@@ -56,12 +63,16 @@ export function isNonConnectionError(e: unknown): boolean {
 }
 
 export function isFetchNonConnectionError(e: unknown): boolean {
-	if (!(e instanceof TypeError)) {
+	if (e instanceof DOMException) {
 		return true;
+	} else if (e instanceof TypeError) {
+		return !!e.message.match(
+			/Failed to parse URL|not a valid URL|is not supported/
+		);
+	} else {
+		// Not a fetch error at all
+		return false;
 	}
-	return !!e.message.match(
-		/Failed to parse URL|not a valid URL|is not supported/
-	);
 }
 
 export function isWebSocketNonConnectionError(e: unknown): boolean | undefined {

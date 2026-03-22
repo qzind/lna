@@ -6,6 +6,8 @@ export type BrowserQuirks = Partial<{
 	// Permissions query may return `prompt` even after it was denied/granted through user
 	// interaction
 	permissionsMayNotReflectUserInteraction: boolean
+	// LNA restrictions do not apply to WebSockets
+	webSocketsUnrestricted: boolean
 }>;
 
 export function getBrowserQuirks(): BrowserQuirks {
@@ -20,11 +22,19 @@ export function getBrowserQuirks(): BrowserQuirks {
 		// TODO: Test if permissions do apply on Windows build of Edge or when testing manually
 		q.permissionsAreOptIn = true;
 	}
+	if (browser.satisfies({chrome: '<147'})) {
+		q.webSocketsUnrestricted = true;
+	}
 
 	if (browser.isBrowser('firefox')) {
 		// TODO: Re-check, may be fixed by version 150
 		//  https://bugzilla.mozilla.org/show_bug.cgi?id=1924572,
 		q.permissionsMayNotReflectUserInteraction = true;
+		// WebSocket restrictions are currently disabled in Firefox because of backwards
+		// compatibility breaks. See
+		//  - https://bugzilla.mozilla.org/show_bug.cgi?id=1993938
+		//  - https://bugzilla.mozilla.org/show_bug.cgi?id=1996551
+		q.webSocketsUnrestricted = true;
 	}
 
 	return q;

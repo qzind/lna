@@ -9,6 +9,7 @@ import {
 } from "../../src/permissions";
 import {getBrowserQuirks} from "../../src/quirks";
 import {
+	connectWebSocket,
 	fetchPublic,
 	setLocalPermission,
 	setLoopbackPermission,
@@ -25,44 +26,60 @@ const permissionsEffective = LnaPermissionsSupported && !quirks.permissionsAreOp
 
 const originAddressSpace = window.lna_origin_address_space;
 
-async function expectDetectDenied(targetSpace) {
-	await expectDetectRejects(targetUrl(targetSpace), targetSpace, new LnaError({
-		denied: true,
-		permission: expect.any(PermissionStatus),
-	}));
+async function expectDetectDenied(ws, targetSpace) {
+	if (ws && quirks.webSocketsUnrestricted) {
+		return expectDetectUnrestrictedWebSocket(targetSpace);
+	} else {
+		await expectDetectRejects(targetUrl(targetSpace), ws, targetSpace, new LnaError({
+			denied: true,
+			permission: expect.any(PermissionStatus),
+		}));
+	}
 }
 
-async function expectDetectGranted(targetSpace) {
-	await expectDetectResolves(targetSpace);
+const expectDetectDeniedFetch = expectDetectDenied.bind(null, false);
+const expectDetectDeniedWebSocket = expectDetectDenied.bind(null, true);
+
+async function expectDetectGranted(ws, targetSpace) {
+	await expectDetectResolves(ws, targetSpace);
 	await expectDetectConnectionFailure(
-		targetSpace,
+		ws, targetSpace,
 		expect.objectContaining({
 			name: getRequiredPermissionForAddressSpace(targetSpace)
 		}),
 	);
 }
 
-async function expectDetectResolves(targetSpace) {
+const expectDetectGrantedFetch = expectDetectGranted.bind(null, false);
+const expectDetectGrantedWebSocket = expectDetectGranted.bind(null, true);
+
+async function expectDetectResolves(ws, targetSpace) {
 	await expect(detectLna(
-		targetUrl(targetSpace), fetch,
-		{overrides: {originAddressSpace, targetAddressSpace: targetSpace}}
-	)).resolves.toHaveProperty('ok', true);
+		targetUrl(targetSpace), ws ? connectWebSocket : fetch,
+		{overrides: {originAddressSpace, targetAddressSpace: targetSpace}, isWebSocket: ws}
+	)).resolves;
 }
 
-async function expectDetectRejects(url, targetSpace, error) {
+async function expectDetectRejects(url, ws, targetSpace, error) {
 	await expect(detectLna(
-		url, fetch,
-		{overrides: {originAddressSpace, targetAddressSpace: targetSpace}}
+		url, ws ? connectWebSocket : fetch,
+		{overrides: {originAddressSpace, targetAddressSpace: targetSpace}, isWebSocket: ws}
 	)).rejects.toThrow(error);
 }
 
-async function expectDetectUnrestricted(targetSpace) {
-	await expectDetectResolves(targetSpace);
-	await expectDetectConnectionFailure(targetSpace, null);
+async function expectDetectUnrestricted(ws, targetSpace) {
+	await expectDetectResolves(ws, targetSpace);
+	await expectDetectConnectionFailure(ws, targetSpace, null);
 }
 
-async function expectDetectConnectionFailure(targetSpace, permission) {
-	await expectDetectRejects(targetFailUrl(targetSpace), targetSpace, new LnaError({
+const expectDetectUnrestrictedFetch = expectDetectUnrestricted.bind(null, false);
+const expectDetectUnrestrictedWebSocket = expectDetectUnrestricted.bind(null, true);
+
+async function expectDetectConnectionFailure(ws, targetSpace, permission) {
+	if (ws && quirks.webSocketsUnrestricted) {
+		permission = null;
+	}
+	await expectDetectRejects(targetFailUrl(targetSpace), ws, targetSpace, new LnaError({
 		denied: false,
 		permission,
 	}));
@@ -81,12 +98,13 @@ describe.runIf(!permissionsEffective && originAddressSpace === 'public')('from p
 	test('detects unrestricted LNA to loopback', async () => {
 		await setLocalPermission('denied');
 		await setLoopbackPermission('denied');
-		await expectDetectUnrestricted('loopback');
+		await expectDetectUnrestrictedFetch('loopback');
+		await expectDetectUnrestrictedWebSocket('loopback');
 	});
 	test('detects unrestricted LNA to local', async () => {
 		await setLocalPermission('denied');
 		await setLoopbackPermission('denied');
-		await expectDetectUnrestricted('local');
+		await expectDetectUnrestrictedWebSocket('local');
 	});
 });
 
@@ -100,29 +118,34 @@ describe.runIf(permissionsEffective && originAddressSpace === 'public')('from pu
 	test('detects denied LNA to loopback', async () => {
 		await setLocalPermission('granted');
 		await setLoopbackPermission('denied');
-		await expectDetectDenied('loopback');
+		await expectDetectDeniedFetch('loopback');
+		await expectDetectDeniedWebSocket('loopback');
 	});
 	test('detects denied LNA to local', async () => {
 		await setLoopbackPermission('granted');
 		await setLocalPermission('denied');
-		await expectDetectDenied('local');
+		await expectDetectDeniedFetch('local');
+		await expectDetectDeniedWebSocket('local');
 	});
 
 	test('detects granted LNA to loopback', async () => {
 		await setLocalPermission('denied');
 		await setLoopbackPermission('granted');
-		await expectDetectGranted('loopback');
+		await expectDetectGrantedFetch('loopback');
+		await expectDetectGrantedWebSocket('loopback');
 	});
 	test('detects granted LNA to local', async () => {
 		await setLoopbackPermission('denied');
 		await setLocalPermission('granted');
-		await expectDetectGranted('local');
+		await expectDetectGrantedFetch('local');
+		await expectDetectGrantedWebSocket('local');
 	});
 
 	test('detects unrestricted LNA to public', async () => {
 		await setLocalPermission('denied');
 		await setLoopbackPermission('denied');
-		await expectDetectUnrestricted('public');
+		await expectDetectUnrestrictedFetch('public');
+		await expectDetectUnrestrictedWebSocket('public');
 	});
 });
 
