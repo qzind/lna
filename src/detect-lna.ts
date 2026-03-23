@@ -26,16 +26,17 @@ async function getPermissionAfterError(
 	return getRequiredPermission(url, options?.overrides);
 }
 
+export type Resource = string | URL | Request;
+export type Promisify<T> = Promise<Awaited<T>>;
+
 // Execute `callback` and try to detect if it fails due to Local Network Access being denied.
 // In that case, an `LnaDeniedError` is thrown, otherwise the original error is rethrown.
-export async function detectLna(
-	url: string | URL,
-	callback: (url: string | URL) => unknown,
+export async function detectLna<R>(
+	resource: Resource,
+	callback: (url: string | URL) => R,
 	options?: LnaOptions
-): Promise<unknown> {
-	if (typeof url === 'string') {
-		url = new URL(url);
-	}
+): Promisify<R> {
+	const url = getUrl(resource);
 	if (options?.isWebSocket && url.protocol === 'http:') {
 		url.protocol = 'ws:';
 	}
@@ -55,6 +56,16 @@ export async function detectLna(
 			? await getLnaPermission(permissionName)
 			: permissionName;
 		throw LnaError.fromPermission(permission, e);
+	}
+}
+
+function getUrl(resource: Resource) {
+	if (resource instanceof URL || typeof resource === 'string') {
+		return new URL(resource);
+	} else if (resource instanceof Request) {
+		return new URL(resource.url);
+	} else {
+		throw new TypeError(`Invalid resource parameter type ${typeof resource}`);
 	}
 }
 
