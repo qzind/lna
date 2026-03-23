@@ -146,7 +146,8 @@ const browsers = Object.entries({
 	],
 	edge: [
 		'144', '145', '146',
-		['beta', '147']
+		['beta', '147'],
+		// ['canary', '148'], No Linux edgedriver released yet
 	],
 	safari: [
 		'stable',

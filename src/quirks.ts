@@ -22,7 +22,9 @@ export function getBrowserQuirks(): BrowserQuirks {
 		// TODO: Test if permissions do apply on Windows build of Edge or when testing manually
 		q.permissionsAreOptIn = true;
 	}
-	if (browser.satisfies({chrome: '<147'})) {
+	// Chrome announced to enable LNA restrictions in v147
+	// Edge has no such announcement yet: https://learn.microsoft.com/en-us/deployedge/ms-edge-local-network-access
+	if (browser.satisfies({chrome: '<147'}) || browser.isBrowser('Microsoft Edge')) {
 		q.webSocketsUnrestricted = true;
 	}
 
