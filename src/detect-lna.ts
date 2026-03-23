@@ -48,7 +48,7 @@ export async function detectLna<R>(
 	try {
 		return await callback(url);
 	} catch (e) {
-		if (isNonConnectionError(e)) {
+		if (isNonConnectionError(e, options)) {
 			throw e;
 		}
 		const permissionName = await getPermissionAfterError(url, statesBefore, options);
@@ -69,8 +69,12 @@ function getUrl(resource: Resource) {
 	}
 }
 
-export function isNonConnectionError(e: unknown): boolean {
-	return isFetchNonConnectionError(e) ?? isWebSocketNonConnectionError(e);
+export function isNonConnectionError(e: unknown, options?: LnaOptions): boolean {
+	if (options?.isWebSocket === true) {
+		return isWebSocketNonConnectionError(e);
+	} else {
+		return isFetchNonConnectionError(e) ?? isWebSocketNonConnectionError(e);
+	}
 }
 
 export function isFetchNonConnectionError(e: unknown): boolean {
@@ -86,8 +90,6 @@ export function isFetchNonConnectionError(e: unknown): boolean {
 	}
 }
 
-export function isWebSocketNonConnectionError(e: unknown): boolean | undefined {
-	if (e instanceof SyntaxError) {
-		return true;
-	}
+export function isWebSocketNonConnectionError(e: unknown): boolean {
+	return e instanceof SyntaxError;
 }
