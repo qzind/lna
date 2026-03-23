@@ -1,12 +1,9 @@
-import {detectLna} from "./detect-lna.js";
-
-async function fetchLna(url: URL | string) {
-	return await detectLna(url, fetch);
-}
-
+export {detectLna} from "./detect-lna.js";
 export {
-	fetchLna,
-	detectLna,
-};
+	makeLnaWrapper,
+	makeFetchLna,
+	makeWebSocketLna,
+	webSocketLna
+} from "./wrappers.js";
 
 export {LnaError} from "./error.js";

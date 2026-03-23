@@ -1,6 +1,6 @@
 import {describe, expect, test} from 'vitest'
 
-import {connectWebSocket, expectSuccessful, setPermission, targetUrl} from "./util";
+import {probeWebSocket, expectSuccessful, setPermission, targetUrl} from "./util";
 import {getBrowserQuirks} from "../../src/quirks";
 import {LnaPermissionsSupported} from "../../src/permissions";
 
@@ -29,7 +29,7 @@ describe.runIf(LnaPermissionsSupported)('webSocketsUnrestricted', () => {
 
 function testPermissionIneffective(addressSpace, ws) {
 	test(`${addressSpace} ${ws ? 'websocket' : 'http'} requests succeed regardless of permission state`, async () => {
-		const f = () => (ws ? connectWebSocket : fetch)(targetUrl(addressSpace));
+		const f = () => (ws ? probeWebSocket : fetch)(targetUrl(addressSpace));
 		await setPermission(addressSpace, 'prompt');
 		await expectSuccessful(f(), ws);
 		await setPermission(addressSpace, 'granted');
@@ -41,7 +41,7 @@ function testPermissionIneffective(addressSpace, ws) {
 
 function testPermissionEffective(addressSpace, ws) {
 	test(`${addressSpace} ${ws ? 'websocket' : 'http'} requests respect permission state`, async () => {
-		const f = () => (ws ? connectWebSocket : fetch)(targetUrl(addressSpace));
+		const f = () => (ws ? probeWebSocket : fetch)(targetUrl(addressSpace));
 		await setPermission(addressSpace, 'denied');
 		await expect(f).rejects.toThrow();
 		await setPermission(addressSpace, 'granted');

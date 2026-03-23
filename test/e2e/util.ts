@@ -2,6 +2,7 @@ import {commands} from "vitest/browser";
 import {JointPermissionSupported, SplitPermissionsSupported} from "src/permissions.js";
 import {AddressSpace} from "src/address-space.js";
 import {expect} from "vitest";
+import {connectWebSocket} from "../../src/wrappers.js";
 
 export function targetUrl(addressSpace: AddressSpace): string {
 	return getWindowPropString(`lna_${addressSpace}_url`);
@@ -23,15 +24,10 @@ export const fetchLocal = () => fetch(targetUrl('local'));
 export const fetchPublic = () => fetch(targetUrl('public'));
 
 // Opens and closes a WebSocket connection for testing whether a connection can be established
-export async function connectWebSocket(url: URL | string) {
-	return new Promise((resolve, reject) => {
-		const ws = new WebSocket(url);
-		ws.addEventListener('open', () => {
-			resolve(ws);
-			ws.close();
-		});
-		ws.addEventListener('error', reject);
-	});
+export async function probeWebSocket(url: URL | string) {
+	const ws = await connectWebSocket(url);
+	ws.close();
+	return ws;
 }
 
 export async function expectSuccessful(promise: Promise<Response | WebSocket>, ws: boolean) {

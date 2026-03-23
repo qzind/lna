@@ -9,7 +9,7 @@ import {
 } from "../../src/permissions";
 import {getBrowserQuirks} from "../../src/quirks";
 import {
-	connectWebSocket,
+	probeWebSocket,
 	fetchPublic,
 	setLocalPermission,
 	setLoopbackPermission,
@@ -55,14 +55,14 @@ const expectDetectGrantedWebSocket = expectDetectGranted.bind(null, true);
 
 async function expectDetectResolves(ws, targetSpace) {
 	await expect(detectLna(
-		targetUrl(targetSpace), ws ? connectWebSocket : fetch,
+		targetUrl(targetSpace), ws ? probeWebSocket : fetch,
 		{overrides: {originAddressSpace, targetAddressSpace: targetSpace}, isWebSocket: ws}
 	)).resolves;
 }
 
 async function expectDetectRejects(url, ws, targetSpace, error) {
 	await expect(detectLna(
-		url, ws ? connectWebSocket : fetch,
+		url, ws ? probeWebSocket : fetch,
 		{overrides: {originAddressSpace, targetAddressSpace: targetSpace}, isWebSocket: ws}
 	)).rejects.toThrow(error);
 }
