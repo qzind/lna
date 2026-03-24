@@ -31,9 +31,9 @@ if (!process.env.BROWSER) {
 	}
 }
 
-if (!ChromiumBrowsers.includes(process.env.BROWSER)) {
-	throw new Error(`Unsupported browser: ${process.env.BROWSER}`);
-}
+// if (!ChromiumBrowsers.includes(process.env.BROWSER)) {
+// 	throw new Error(`Unsupported browser: ${process.env.BROWSER}`);
+// }
 process.env.BROWSER_ARGS = ChromeAddressSpaceOverridesArgs({
 	...TestServerAddressSpaceOverrides,
 	[`127.0.0.1:${port}`]: originAddressSpace,
