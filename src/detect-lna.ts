@@ -48,7 +48,9 @@ export async function detectLna<R>(
 	try {
 		return await callback(url);
 	} catch (e) {
-		if (isNonConnectionError(e, options)) {
+		const isConnectionError = options?.isConnectionError
+			?? (e => !isNonConnectionError(e, options));
+		if (!isConnectionError(e)) {
 			throw e;
 		}
 		const permissionName = await getPermissionAfterError(url, statesBefore, options);
