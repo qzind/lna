@@ -4,7 +4,7 @@
   "description": "Helpers for Local Network Access restrictions",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "vite build",
     "test": "vitest",
     "demo": "vite --config demo/vite.config.ts"
   },

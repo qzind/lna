@@ -1,8 +1,10 @@
 import type {UserConfig} from 'vite'
 import * as path from "node:path";
 
-import httpServerPlugin from "./vite/vite-plugin-http-server.js";
-import {AddressSpace, AddressSpaceOverrides} from "./util/address-space-override.js";
+import httpServerPlugin from "./vite/vite-plugin-http-server";
+import {AddressSpace, AddressSpaceOverrides} from "./util/address-space-override";
+
+import packageJson from './package.json' with {type: 'json'};
 
 export const TestServerAddress = '127.0.0.1';
 export const TestServers = {
@@ -42,6 +44,13 @@ export default {
 		alias: {
 			"src": path.resolve(__dirname, "src"),
 		}
+	},
+	build: {
+		lib: {
+			entry: path.resolve(__dirname, 'src/index.ts'),
+			name: packageJson.name,
+			formats: ['es'],
+		},
 	},
 	plugins: [
 		httpServerPlugin({port: TestServers.success.public}),

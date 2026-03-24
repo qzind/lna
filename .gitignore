@@ -21,3 +21,6 @@ lerna-debug.log*
 # vitest
 .vitest-attachments/
 __screenshots__
+
+# vite
+dist/
