@@ -15,14 +15,14 @@ Currently tested on
 At its core, the API ceneters around a single function `detectLna`:
 
 ```typescript
-declare async function detectLna(
+declare async function detectLna<R>(
 	url: string | URL,
-	callback: (url: string | URL) => unknown,
+	callback: (url: string | URL) => R,
 	options?: LnaOptions
-): Promise<unknown>
+): R
 ```
 
-This calls `callback` with the given `url`.
+This calls and awaits `callback` with the given `url`.
 If the callback throws an error that indicates connection failure, `detectLna` throws an `LnaError` instance with the following properties:
 
 - `denied: boolean | undefined` indicates whether permission for this request was denied, or
@@ -62,7 +62,7 @@ use cases:
 
 ```typescript
 try {
-	detectLna("http://127.0.0.1:8000", fetch)
+	await detectLna("http://127.0.0.1:8000", fetch)
 } catch (e) {
 	if (e instanceof LnaError) {
 		if (e.denied) {
