@@ -27,26 +27,31 @@ function handleWebsocketUpgrade(req: http.IncomingMessage, res: http.ServerRespo
 }
 
 export default function plugin(config: Config): Vite.Plugin {
-	const server = http.createServer((req, res) => {
-		try {
-			if (config.respond ?? true) {
-				if (handleWebsocketUpgrade(req, res)) return;
-				res.writeHead(200, {
-					'Content-Type': 'text/plain',
-					'Access-Control-Allow-Origin': '*',
-				});
-				res.write('OK');
-			}
-			res.end();
-		} catch(e){}
-	});
+	let server: http.Server | null = null;
 	return {
 		name: 'vite:http-server',
+		configResolved(config) {
+			if (config.mode !== 'development') return;
+			server = http.createServer((req, res) => {
+				try {
+					if (config.respond ?? true) {
+						if (handleWebsocketUpgrade(req, res)) return;
+						res.writeHead(200, {
+							'Content-Type': 'text/plain',
+							'Access-Control-Allow-Origin': '*',
+						});
+						res.write('OK');
+					}
+					res.end();
+				} catch (e) {
+				}
+			});
+		},
 		buildStart() {
-			server.listen(config.port, config.host);
+			server?.listen(config.port, config.host);
 		},
 		buildEnd() {
-			server.close();
+			server?.close();
 		}
 	}
 }
