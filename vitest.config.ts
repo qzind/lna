@@ -2,7 +2,12 @@ import {defineConfig, ViteUserConfig} from 'vitest/config'
 import {BrowserCommand, BrowserInstanceOption} from "vitest/node";
 import * as path from "node:path";
 
-import httpServerPlugin from "./vite/vite-plugin-http-server.js";
+import viteConfig, {
+	OriginAddressSpaceDefineName,
+	TestServerAddressDefines,
+	TestServerAddressSpaceOverrides
+} from './vite.config.js';
+
 import {
 	AddressSpace,
 	AddressSpaceOverrides,
@@ -28,19 +33,6 @@ const BrowserApiConfig = {
 	strictPort: true,
 }
 
-const TargetPortLoopback = 10001;
-const TargetPortLocal = 10002;
-const TargetPortPublic = 10003;
-const TargetAddressLoopback = `127.0.0.1:${TargetPortLoopback}`;
-const TargetAddressLocal = `127.0.0.1:${TargetPortLocal}`;
-const TargetAddressPublic = `127.0.0.1:${TargetPortPublic}`;
-const TargetPortLoopbackFail = 11001;
-const TargetPortLocalFail = 11002;
-const TargetPortPublicFail = 11003;
-const TargetAddressLoopbackFail = `127.0.0.1:${TargetPortLoopbackFail}`;
-const TargetAddressLocalFail = `127.0.0.1:${TargetPortLocalFail}`;
-const TargetAddressPublicFail = `127.0.0.1:${TargetPortPublicFail}`;
-
 function providerForBrowser(browser: BrowserInstanceOption['browser']) {
 	switch (browser) {
 		case 'edge':
@@ -65,17 +57,13 @@ function instance(
 	originAddressSpace?: AddressSpace,
 ): BrowserInstanceOption {
 
-	const addressSpaceOverrides: AddressSpaceOverrides = {};
+	const addressSpaceOverrides: AddressSpaceOverrides = {
+		...TestServerAddressSpaceOverrides
+	};
 
 	if (originAddressSpace) {
 		addressSpaceOverrides[`${BrowserApiConfig.host ?? '127.0.0.1'}:${BrowserApiConfig.port}`] = originAddressSpace;
 	}
-	addressSpaceOverrides[TargetAddressLoopback] = 'loopback';
-	addressSpaceOverrides[TargetAddressLocal] = 'local';
-	addressSpaceOverrides[TargetAddressPublic] = 'public';
-	addressSpaceOverrides[TargetAddressLoopbackFail] = 'loopback';
-	addressSpaceOverrides[TargetAddressLocalFail] = 'local';
-	addressSpaceOverrides[TargetAddressPublicFail] = 'public';
 
 	let channel = undefined;
 	if (version instanceof Array) {
@@ -159,13 +147,8 @@ function e2eTest(originAddressSpace: AddressSpace): ViteUserConfig {
 	return {
 		...commonConfig,
 		define: {
-			'lna_origin_address_space': JSON.stringify(originAddressSpace),
-			'lna_loopback_url': JSON.stringify(`http://${TargetAddressLoopback}`),
-			'lna_local_url': JSON.stringify(`http://${TargetAddressLocal}`),
-			'lna_public_url': JSON.stringify(`http://${TargetAddressPublic}`),
-			'lna_loopback_fail_url': JSON.stringify(`http://${TargetAddressLoopbackFail}`),
-			'lna_local_fail_url': JSON.stringify(`http://${TargetAddressLocalFail}`),
-			'lna_public_fail_url': JSON.stringify(`http://${TargetAddressPublicFail}`),
+			[OriginAddressSpaceDefineName]: JSON.stringify(originAddressSpace),
+			...TestServerAddressDefines,
 		},
 		test: {
 			...commonConfig.test,
@@ -184,6 +167,7 @@ function e2eTest(originAddressSpace: AddressSpace): ViteUserConfig {
 }
 
 export default defineConfig({
+	...viteConfig,
 	test: {
 		projects: [
 			{
@@ -213,14 +197,4 @@ export default defineConfig({
 			e2eTest('public'),
 		],
 	},
-	plugins: [
-		httpServerPlugin({port: TargetPortPublic}),
-		httpServerPlugin({port: TargetPortLocal}),
-		httpServerPlugin({port: TargetPortLoopback}),
-		// HTTP server sending empty responses (for testing connection errors that aren't permission
-		// errors)
-		httpServerPlugin({respond: false, port: TargetPortPublicFail}),
-		httpServerPlugin({respond: false, port: TargetPortLocalFail}),
-		httpServerPlugin({respond: false, port: TargetPortLoopbackFail}),
-	],
 })

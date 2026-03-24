@@ -17,6 +17,7 @@
     "apt-parser": "^1.5.1",
     "compare-versions": "^6.1.1",
     "typescript": "^5.9.3",
+    "vite": "^7",
     "vitest": "^4.1",
     "webdriverio": "^9.25.0"
   },

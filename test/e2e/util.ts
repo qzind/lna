@@ -5,7 +5,7 @@ import {expect} from "vitest";
 import {connectWebSocket} from "../../src/wrappers.js";
 
 export function targetUrl(addressSpace: AddressSpace): string {
-	return getWindowPropString(`lna_${addressSpace}_url`);
+	return getWindowPropString(`lna_${addressSpace}_success_url`);
 }
 
 export function targetFailUrl(addressSpace: AddressSpace): string {
