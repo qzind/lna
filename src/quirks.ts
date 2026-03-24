@@ -1,5 +1,3 @@
-import Bowser from "bowser";
-
 export type BrowserQuirks = Partial<{
 	// Permissions are only enforced if the user opts-in, even if set via WebDriver
 	permissionsAreOptIn: boolean
@@ -12,8 +10,9 @@ export type BrowserQuirks = Partial<{
 
 export function getBrowserQuirks(): BrowserQuirks {
 	const q: BrowserQuirks = {};
-	const browser = Bowser.getParser(window.navigator.userAgent);
-	if (browser.satisfies({chrome: '<142', edge: '<=147'})) {
+
+	if (is('edge', '<=', 147) ||
+		is('chrome', '<', 142)) {
 		// Official Chrome communication indicates that permissions should work
 		// starting with v138 if opting into Dev Trial, but testing shows that
 		// this is already available in v136.
@@ -24,11 +23,11 @@ export function getBrowserQuirks(): BrowserQuirks {
 	}
 	// Chrome announced to enable LNA restrictions in v147
 	// Edge has no such announcement yet: https://learn.microsoft.com/en-us/deployedge/ms-edge-local-network-access
-	if (browser.satisfies({chrome: '<147'}) || browser.isBrowser('Microsoft Edge')) {
+	if (is('chrome', '<', 147) || is('edge')) {
 		q.webSocketsUnrestricted = true;
 	}
 
-	if (browser.isBrowser('firefox')) {
+	if (is('firefox')) {
 		// TODO: Re-check, may be fixed by version 150
 		//  https://bugzilla.mozilla.org/show_bug.cgi?id=1924572,
 		q.permissionsMayNotReflectUserInteraction = true;
@@ -40,4 +39,33 @@ export function getBrowserQuirks(): BrowserQuirks {
 	}
 
 	return q;
+}
+
+const BrowserUANames = {
+	edge: 'Edg',
+	chrome: 'Chrome',
+	firefox: 'Firefox',
+	safari: 'Safari',
+} as const;
+type Browser = keyof typeof BrowserUANames;
+
+function is(browser: Browser): boolean;
+function is(browser: Browser, cmp: '<' | '<=' | '=' | '>=' | '>', version: number):boolean;
+function is(browser: Browser, cmp?: '<' | '<=' | '=' | '>=' | '>', version?: number) {
+	const detectedVersion = getUAMajorVersion(BrowserUANames[browser]);
+	if (! version) return !!detectedVersion;
+	if (!detectedVersion) return false;
+	switch (cmp) {
+		case '<': return detectedVersion < version;
+		case '<=': return detectedVersion <= version;
+		case '=': return detectedVersion === version;
+		case '>=': return detectedVersion >= version;
+		case '>': return detectedVersion > version;
+	}
+}
+
+function getUAMajorVersion(name: string) {
+	const ua = window.navigator.userAgent;
+	const match = ua.match(new RegExp(`${name}/([\\d.]+)`));
+	return match ? parseInt(match[1]) : null;
 }

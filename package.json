@@ -9,7 +9,6 @@
     "demo": "vite --config demo/vite.config.ts"
   },
   "dependencies": {
-    "bowser": "^2.14.1",
     "ip-address": "^10.1.0"
   },
   "devDependencies": {
