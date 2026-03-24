@@ -1,6 +1,7 @@
 import {createRoot} from 'react-dom/client';
 import {useState} from 'react';
 import {detectLna, LnaError} from "src";
+import {connectWebSocket} from "src/wrappers";
 
 const originAddressSpace = window['lna_origin_address_space'];
 
@@ -11,17 +12,22 @@ function App() {
 		setLog(log => [...log, entry]);
 	}
 
-	async function handleClick(type, space) {
+	async function handleClick(protocol, type, space) {
 		const url = window[`lna_${space}_${type}_url`];
+		const ws = protocol === 'ws';
 		try {
-			const response = await detectLna(url, fetch, {
-				isWebSocket: false, overrides: {
-					targetAddressSpace: space, originAddressSpace: originAddressSpace,
-				},
-			});
-			addLogEntry({type, space, result: response});
+			const response = await detectLna(
+				url,
+				ws ? connectWebSocket : fetch,
+				{
+					isWebSocket: ws, overrides: {
+						targetAddressSpace: space, originAddressSpace: originAddressSpace,
+					},
+				}
+			);
+			addLogEntry({type, space, protocol, result: response});
 		} catch (e) {
-			addLogEntry({type, space, error: e});
+			addLogEntry({type, space, protocol, error: e});
 		}
 	}
 
@@ -29,7 +35,8 @@ function App() {
 
 	return <>
 		<h1>LNA Detect Demo</h1>
-		Click one of the buttons below to connect to a server that's in
+		Click one of the buttons below to connect to a server
+		via <code>fetch</code> or <code>WebSocket</code> that's in
 		<ul>
 			<li>public</li>
 			<li>local or</li>
@@ -55,18 +62,14 @@ function App() {
 			<tr>
 				<th>Succeeding</th>
 				{spaces.map(s => <td key={s}>
-					<ConnectButton type="success" space={s}
-					               onClick={() => handleClick('success', s)}
-					/>
+					<ConnectButtons type={'success'} space={s} onClick={handleClick}/>
 				</td>)}
 			</tr>
 			<tr>
 				<th>Failing</th>
 
 				{spaces.map(s => <td key={s}>
-					<ConnectButton type="success" space={s}
-					               onClick={() => handleClick('fail', s)}
-					/>
+					<ConnectButtons type={'fail'} space={s} onClick={handleClick}/>
 				</td>)}
 			</tr>
 			</tbody>
@@ -77,13 +80,20 @@ function App() {
 	</>;
 }
 
-function ConnectButton({onClick}) {
-	return <button onClick={onClick}>Connect</button>;
+function ConnectButtons({type, space, onClick}) {
+	return <>
+		<ConnectButton onClick={() => onClick('http', type, space)}>fetch</ConnectButton>
+		<ConnectButton onClick={() => onClick('ws', type, space)}>WebSocket</ConnectButton>
+	</>
+}
+
+function ConnectButton({onClick, children}) {
+	return <button onClick={onClick}>{children}</button>;
 }
 
 function LogEntry({entry}) {
-	const {type, space, error, result} = entry;
-	const logPrefix = `[${type}][${space}]`;
+	const {type, space, protocol, error, result} = entry;
+	const logPrefix = `[${type}][${space}][${protocol}]`;
 	return <>{logPrefix} <LogMsg error={error} result={result}/></>;
 }
 
