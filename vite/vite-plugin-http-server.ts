@@ -30,8 +30,8 @@ export default function plugin(config: Config): Vite.Plugin {
 	let server: http.Server | null = null;
 	return {
 		name: 'vite:http-server',
-		configResolved(config) {
-			if (config.mode !== 'development') return;
+		configResolved({mode}) {
+			if (mode === 'production') return;
 			server = http.createServer((req, res) => {
 				try {
 					if (config.respond ?? true) {
