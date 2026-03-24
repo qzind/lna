@@ -9,6 +9,7 @@ describe('guessAddressSpace', () => {
 			'127.0.0.1',
 			'0:0:0:0:0:0:0:1', '::1', '[::1]',
 			'::ffff:127.0.0.1', // IPv4-mapped IPv6 address
+			'2002:7f00:0001::', // 6to4
 			'localhost', 'myapp.localhost',
 			'localhost.example.com',
 		])('%s', (address) => {
@@ -23,6 +24,7 @@ describe('guessAddressSpace', () => {
 			'169.254.0.1', '169.254.255.254',
 			'fe80::1', 'fe80::1ff:fe23:4567:890a',
 			'fc00::', 'fdff:ffff:ffff:ffff:ffff:ffff:ffff:ffff',  // Unique local
+			'2002:c0a8:0001::', // 6to4
 			'::ffff:10.0.0.1', // IPv4-mapped IPv6
 			'host.local', 'host.internal',
 		])('%s', (address) => {
@@ -34,6 +36,7 @@ describe('guessAddressSpace', () => {
 			'8.8.8.8', '1.1.1.1',
 			'2001:4860:4860::8888', '2606:4700:4700::1111', '2001:db8::ff00:42:8329',
 			'::ffff:1.1.1.1', // IPv4-mapped IPv6
+			'2002:0404:0404::', // 6to4
 			'www.google.com',
 		])('%s', (address) => {
 			expect(guessAddressSpace(address)).toBe('public');

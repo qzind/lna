@@ -50,7 +50,7 @@ function getIp6AddressSpace(ip: Address6): AddressSpace {
 		return getIp4AddressSpace(ipv4);
 	}
 	if (ip.is6to4()) {
-		return getIp4AddressSpace(ip.inspect6to4().gateway);
+		return getIp4AddressSpace(new Address4(ip.inspect6to4().gateway));
 	}
 	return "public";
 }
