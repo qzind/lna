@@ -3,6 +3,7 @@ export {
 	makeLnaWrapper,
 	makeFetchLna,
 	makeWebSocketLna,
+	fetchLna,
 	webSocketLna
 } from "./wrappers.js";
 
