@@ -5,7 +5,8 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
-    "test": "vitest"
+    "test": "vitest",
+    "demo": "vite --config demo/vite.config.ts"
   },
   "dependencies": {
     "bowser": "^2.14.1",
