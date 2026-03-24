@@ -1,4 +1,4 @@
-import {UserConfig} from "vite";
+import {mergeConfig, UserConfig} from "vite";
 
 import commonConfig, {
 	OriginAddressSpaceDefineName,
@@ -9,6 +9,7 @@ import * as child_process from "node:child_process";
 import {AddressSpace} from "../src/address-space.js";
 import {ChromeAddressSpaceOverridesArgs} from "../util/address-space-override.js";
 import * as path from "node:path";
+import react from "@vitejs/plugin-react-swc";
 
 const port = 5173;
 
@@ -40,8 +41,7 @@ process.env.BROWSER_ARGS = ChromeAddressSpaceOverridesArgs({
 }).join(' ');
 
 
-export default {
-	...commonConfig,
+export default mergeConfig(commonConfig, {
 	root: path.resolve(__dirname),
 	server: {
 		open: true,
@@ -51,4 +51,5 @@ export default {
 		[OriginAddressSpaceDefineName]: JSON.stringify('public'),
 		...TestServerAddressDefines,
 	},
-} satisfies UserConfig;
+	plugins: [react()],
+} satisfies UserConfig);
