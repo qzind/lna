@@ -12,8 +12,8 @@ function App() {
 		setLog(log => [...log, entry]);
 	}
 
-	async function handleClick(protocol, type, space) {
-		const url = window[`lna_${space}_${type}_url`];
+	async function handleClick({protocol, url, type, space}) {
+		url ??= window[`lna_${space}_${type}_url`];
 		const ws = protocol === 'ws';
 		try {
 			const response = await detectLna(
@@ -21,7 +21,8 @@ function App() {
 				ws ? connectWebSocket : fetch,
 				{
 					isWebSocket: ws, overrides: {
-						targetAddressSpace: space, originAddressSpace: originAddressSpace,
+						targetAddressSpace: space,
+						originAddressSpace: originAddressSpace,
 					},
 				}
 			);
@@ -77,13 +78,43 @@ function App() {
 		<ol>
 			{log.map((entry, i) => <li key={i}><LogEntry entry={entry}/></li>)}
 		</ol>
+
+		<p>or connect to an URL of your own:</p>
+		<ConnectUrlForm onClick={handleClick}/>
 	</>;
+}
+
+function ConnectUrlForm({onClick}) {
+	function handleSubmit(e) {
+		e.preventDefault();
+		const formData = new FormData(e.target);
+		const url = formData.get('url');
+		const protocol = formData.get('protocol');
+		onClick({protocol, url});
+	}
+
+	return <form onSubmit={handleSubmit}>
+		<input name="url" defaultValue="http://localhost:8000"/>
+		<input type="radio" name="protocol" id="http" value="http" defaultChecked/>
+		<label htmlFor="http">fetch</label>
+		<input type="radio" name="protocol" id="ws" value="ws"/>
+		<label htmlFor="ws">WebSocket</label>
+		<button type="submit">Connect</button>
+	</form>
 }
 
 function ConnectButtons({type, space, onClick}) {
 	return <>
-		<ConnectButton onClick={() => onClick('http', type, space)}>fetch</ConnectButton>
-		<ConnectButton onClick={() => onClick('ws', type, space)}>WebSocket</ConnectButton>
+		<ConnectButton
+			onClick={() => onClick({protocol: 'http', type, space})}
+		>
+			fetch
+		</ConnectButton>
+		<ConnectButton
+			onClick={() => onClick({protocol: 'ws', type, space})}
+		>
+			WebSocket
+		</ConnectButton>
 	</>
 }
 
