@@ -38,7 +38,9 @@ type LnaOptions = {
   override?: {
     targetAddressSpace?: AddressSpace,
     originAddressSpace?: AddressSpace,
-  }
+  },
+  isWebSocket?: boolean,
+  isConnectionError?: (error: unknown) => boolean,
 }
 ```
 
