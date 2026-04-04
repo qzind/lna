@@ -1,3 +1,5 @@
+import is from "./browser";
+
 export type BrowserQuirks = Partial<{
 	// Permissions are only enforced if the user opts-in, even if set via WebDriver
 	permissionsAreOptIn: boolean
@@ -39,33 +41,4 @@ export function getBrowserQuirks(): BrowserQuirks {
 	}
 
 	return q;
-}
-
-const BrowserUANames = {
-	edge: 'Edg',
-	chrome: 'Chrome',
-	firefox: 'Firefox',
-	safari: 'Safari',
-} as const;
-type Browser = keyof typeof BrowserUANames;
-
-function is(browser: Browser): boolean;
-function is(browser: Browser, cmp: '<' | '<=' | '=' | '>=' | '>', version: number):boolean;
-function is(browser: Browser, cmp?: '<' | '<=' | '=' | '>=' | '>', version?: number) {
-	const detectedVersion = getUAMajorVersion(BrowserUANames[browser]);
-	if (! version) return !!detectedVersion;
-	if (!detectedVersion) return false;
-	switch (cmp) {
-		case '<': return detectedVersion < version;
-		case '<=': return detectedVersion <= version;
-		case '=': return detectedVersion === version;
-		case '>=': return detectedVersion >= version;
-		case '>': return detectedVersion > version;
-	}
-}
-
-function getUAMajorVersion(name: string) {
-	const ua = window.navigator.userAgent;
-	const match = ua.match(new RegExp(`${name}/([\\d.]+)`));
-	return match ? parseInt(match[1]) : null;
 }

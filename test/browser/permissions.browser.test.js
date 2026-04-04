@@ -7,8 +7,8 @@ import {
 	SplitPermissionsSupported,
 	PermissionSupport
 } from "src/permissions";
-import Bowser from 'bowser';
 import {getBrowserQuirks} from "../../src/quirks";
+import isBrowser from "src/browser.ts";
 
 if (typeof window === 'undefined') {
 	throw new Error('This test must be run in a browser environment')
@@ -19,26 +19,30 @@ const supported = Object.entries(PermissionSupport)
 	.map(([name]) => name);
 
 function expectedSupport() {
-	const browser = Bowser.getParser(window.navigator.userAgent);
-	if (browser.isBrowser('safari')) {
+	console.log('browser', navigator.userAgent);
+	if (isBrowser('safari')) {
 		return [];
 	}
-	if (browser.satisfies({firefox: '<150'})) {
+	if (isBrowser('firefox', '<', 150)) {
 		return [];
 	}
-	if (browser.satisfies({firefox: '>=150'})) {
+	if (isBrowser('firefox', '>=', 150)) {
 		return ['loopback-network', 'local-network'];
 	}
-	if (browser.satisfies({chrome: '<136', edge: '<136'})) {
+	if (isBrowser('chrome', '<', 136) ||
+		isBrowser('edge', '<', 136)) {
 		return [];
 	}
-	if (browser.satisfies({chrome: '>=136', edge: '>=136'}) && browser.satisfies({chrome: '<=144', edge: '<=144'})) {
+	if (
+		(isBrowser('chrome', '>=', 136) && isBrowser('chrome', '<=', 144)) ||
+		(isBrowser('edge', '>=', 136) && isBrowser('edge', '<=', 144))
+	) {
 		return ['local-network-access'];
 	}
-	if (browser.satisfies({chrome: '>144', edge: '>144'})) {
+	if (isBrowser('chrome', '>', 144) || isBrowser('edge', '>', 144)) {
 		return ['local-network-access', 'loopback-network', 'local-network'];
 	}
-	throw new Error(`Unknown browser ${browser.getBrowserName()} ${browser.getBrowserVersion()}`);
+	throw new Error(`Unknown browser with UA ${navigator.userAgent}`);
 }
 
 describe('SupportedPermissions', () => {
