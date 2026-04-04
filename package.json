@@ -11,6 +11,7 @@
   "dependencies": {
     "ip-address": "^10.1.0"
   },
+  "type": "module",
   "devDependencies": {
     "@docker/node-sdk": "^0.0.17",
     "@types/react": "^19",
