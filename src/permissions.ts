@@ -4,7 +4,7 @@ import {
 	guessAddressSpace,
 	isLessPublic
 } from "./address-space.js";
-import {AddressSpaceOverrides} from "./options.js";
+import {LnaOptions} from "./options.js";
 import {getBrowserQuirks} from "./quirks.js";
 
 const LnaJointPermission = 'local-network-access' as const;
@@ -66,14 +66,19 @@ export function getRequiredPermissionForAddressSpaces(targetSpace: DetectedAddre
 	return permission;
 }
 
-export function getRequiredPermission(url: URL, overrides?: AddressSpaceOverrides) {
-	if ((url.protocol === 'ws:' || url.protocol === 'wss:') && getBrowserQuirks().webSocketsUnrestricted) {
+export function getRequiredPermissionName(url: URL, options?: LnaOptions) {
+	if ((options?.isWebSocket || url.protocol === 'ws:' || url.protocol === 'wss:') && getBrowserQuirks().webSocketsUnrestricted) {
 		return null;
 	}
 	return getRequiredPermissionForAddressSpaces(
-		overrides?.targetAddressSpace ?? guessAddressSpace(window.location.hostname),
-		overrides?.originAddressSpace ?? guessAddressSpace(url.hostname),
+		options?.overrides?.targetAddressSpace ?? guessAddressSpace(window.location.hostname),
+		options?.overrides?.originAddressSpace ?? guessAddressSpace(url.hostname),
 	)
+}
+
+export async function getRequiredPermission(url: URL, options?: LnaOptions) {
+	const name = getRequiredPermissionName(url, options);
+	return name ? await getLnaPermission(name) : name;
 }
 
 export async function getLnaPermission(name: LnaPermissionName) {

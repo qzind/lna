@@ -13,17 +13,27 @@ import {LnaOptions} from "./options.js";
 // determined.
 async function getPermissionAfterError(
 	url: URL,
-	statesBefore: LnaPermissionStates,
+	statesBefore?: LnaPermissionStates,
 	options?: LnaOptions,
-): Promise<LnaPermissionName | null | undefined> {
-	const statesAfter = await getLnaPermissionStates();
-	for (const [permission, state] of Object.entries(statesAfter) as [LnaPermissionName, PermissionState][]) {
-		if (statesBefore[permission] === "prompt" && (state === "denied" || state === 'granted')) {
-			return permission;
+): Promise<PermissionStatus | null | undefined> {
+	if (statesBefore) {
+		const changedPermission = await findChangedPermission(statesBefore);
+		if (changedPermission) return changedPermission;
+	}
+	return await getRequiredPermission(url, options);
+}
+
+async function findChangedPermission(statesBefore: LnaPermissionStates): Promise<PermissionStatus | undefined> {
+	for (const [name, stateBefore] of Object.entries(statesBefore) as [LnaPermissionName, PermissionState][]) {
+		if (stateBefore === "prompt") {
+			const perm = await getLnaPermission(name);
+			if (!perm) continue;
+			const stateAfter = perm?.state;
+			if (stateAfter === "denied" || stateAfter === 'granted') {
+				return perm;
+			}
 		}
 	}
-
-	return getRequiredPermission(url, options?.overrides);
 }
 
 export type Resource = string | URL | Request;
@@ -37,28 +47,36 @@ export async function detectLna<R>(
 	options?: LnaOptions
 ): Promisify<R> {
 	const url = getUrl(resource);
-	if (options?.isWebSocket && url.protocol === 'http:') {
-		url.protocol = 'ws:';
-	}
-	if (options?.isWebSocket && url.protocol === 'https:') {
-		url.protocol = 'wss:';
-	}
 
 	const statesBefore = await getLnaPermissionStates();
 	try {
 		return await callback(url);
-	} catch (e) {
-		const isConnectionError = options?.isConnectionError
-			?? (e => !isNonConnectionError(e, options));
-		if (!isConnectionError(e)) {
-			throw e;
-		}
-		const permissionName = await getPermissionAfterError(url, statesBefore, options);
-		const permission = permissionName
-			? await getLnaPermission(permissionName)
-			: permissionName;
-		throw LnaError.fromPermission(permission, e);
+	} catch (error) {
+		throw await detectLnaError({
+			error,
+			url,
+			permissionStatesBefore: statesBefore
+		}, options) ?? error;
 	}
+}
+
+export async function detectLnaError<E>(
+	context: {
+		error: E,
+		url: URL,
+		permissionStatesBefore?: LnaPermissionStates,
+	},
+	options?: LnaOptions,
+): Promise<LnaError | null> {
+	const isConnectionError = options?.isConnectionError
+		?? (e => !isNonConnectionError(e, options));
+	if (!isConnectionError(context.error)) {
+		return null;
+	}
+	const permission = await getPermissionAfterError(
+		context.url, context.permissionStatesBefore, options,
+	);
+	return LnaError.fromPermission(permission, context.error);
 }
 
 function getUrl(resource: Resource) {

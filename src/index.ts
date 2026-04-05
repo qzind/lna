@@ -1,4 +1,4 @@
-export {detectLna} from "./detect-lna.js";
+export {detectLna, detectLnaError} from "./detect-lna.js";
 export {
 	makeLnaWrapper,
 	makeFetchLna,
