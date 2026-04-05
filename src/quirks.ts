@@ -30,14 +30,18 @@ export function getBrowserQuirks(): BrowserQuirks {
 	}
 
 	if (is('firefox')) {
-		// TODO: Re-check, may be fixed by version 150
-		//  https://bugzilla.mozilla.org/show_bug.cgi?id=1924572,
-		q.permissionsMayNotReflectUserInteraction = true;
 		// WebSocket restrictions are currently disabled in Firefox because of backwards
 		// compatibility breaks. See
 		//  - https://bugzilla.mozilla.org/show_bug.cgi?id=1993938
 		//  - https://bugzilla.mozilla.org/show_bug.cgi?id=1996551
 		q.webSocketsUnrestricted = true;
+	}
+
+	if (is('firefox', '<', 151)) {
+		// Querying temporary permissions in Firefox was broken until v150
+		// https://bugzilla.mozilla.org/show_bug.cgi?id=1924572
+		// https://bugzilla.mozilla.org/show_bug.cgi?id=2021626
+		q.permissionsMayNotReflectUserInteraction = true;
 	}
 
 	return q;

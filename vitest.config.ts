@@ -131,7 +131,8 @@ const browsers = Object.entries({
 	firefox: [
 		'stable_148.0',
 		'stable_149.0',
-		'nightly_150.0a1'
+		'beta_150.0b5',
+		'nightly_151.0a1',
 	],
 	edge: [
 		'144', '145', '146',
