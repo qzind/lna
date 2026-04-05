@@ -52,11 +52,17 @@ export async function detectLna<R>(
 	try {
 		return await callback(url);
 	} catch (error) {
+		const isConnectionError = options?.isConnectionError
+			?? (e => !isNonConnectionError(e, options));
+		if (!isConnectionError(error)) {
+			throw error;
+		}
+
 		throw await detectLnaError({
 			error,
 			url,
 			permissionStatesBefore: statesBefore
-		}, options) ?? error;
+		}, options);
 	}
 }
 
@@ -66,13 +72,8 @@ export async function detectLnaError<E>(
 		url: URL,
 		permissionStatesBefore?: LnaPermissionStates,
 	},
-	options?: LnaOptions,
-): Promise<LnaError | null> {
-	const isConnectionError = options?.isConnectionError
-		?? (e => !isNonConnectionError(e, options));
-	if (!isConnectionError(context.error)) {
-		return null;
-	}
+	options?: Omit<LnaOptions, 'isConnectionError'>,
+): Promise<LnaError> {
 	const permission = await getPermissionAfterError(
 		context.url, context.permissionStatesBefore, options,
 	);
