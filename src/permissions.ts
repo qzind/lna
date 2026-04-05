@@ -34,19 +34,37 @@ const LnaPermissionNames: LnaPermissionName[] = [
 	LnaLoopbackPermission, LnaLocalPermission, LnaJointPermission,
 ];
 
-export const PermissionSupport = Object.fromEntries(
-	await Promise.all(LnaPermissionNames.map(async name => [name, await permissionSupported(name)]))
-) as Record<LnaPermissionName, boolean>;
-export const SupportedPermissions = Object.entries(PermissionSupport).filter(([, s]) => s).map(([n]) => n) as LnaPermissionName[];
-export const SplitPermissionsSupported = PermissionSupport[LnaLoopbackPermission] && PermissionSupport[LnaLocalPermission];
-export const JointPermissionSupported = PermissionSupport[LnaJointPermission];
-export const LnaPermissionsSupported = SplitPermissionsSupported || JointPermissionSupported;
+type PermissionSupportMap = Record<LnaPermissionName, boolean>;
 
-const permissionsEffective = LnaPermissionsSupported && !getBrowserQuirks().permissionsAreOptIn;
+type BrowserSupport = {
+	PermissionNames: LnaPermissionName[],
+	LnaJointPermission: boolean,
+	LnaSplitPermissions: boolean,
+	LnaPermissionsEffective: boolean,
+};
 
-export function getRequiredPermissionForAddressSpace(targetSpace: AddressSpace): LnaPermissionName | null {
-	if (! permissionsEffective) return null;
-	if (!SplitPermissionsSupported) return LnaJointPermission;
+export async function getBrowserSupport(): Promise<BrowserSupport> {
+	const PermissionSupport = Object.fromEntries(
+		await Promise.all(LnaPermissionNames.map(async name => [name, await permissionSupported(name)]))
+	) as PermissionSupportMap;
+	const SupportedPermissions = Object.entries(PermissionSupport)
+		.filter(([, s]) => s)
+		.map(([n]) => n) as LnaPermissionName[];
+	const anySupported = !! SupportedPermissions.length;
+
+	return {
+		PermissionNames: SupportedPermissions,
+		LnaPermissions: anySupported,
+		LnaJointPermission: PermissionSupport[LnaJointPermission],
+		LnaSplitPermissions: PermissionSupport[LnaLoopbackPermission] && PermissionSupport[LnaLocalPermission],
+		LnaPermissionsEffective: anySupported && ! getBrowserQuirks().permissionsAreOptIn,
+	}
+}
+
+export async function getRequiredPermissionForAddressSpace(targetSpace: AddressSpace): Promise<LnaPermissionName | null> {
+	const support = await getBrowserSupport();
+	if (! support.LnaPermissionsEffective) return null;
+	if (! support.LnaSplitPermissions) return LnaJointPermission;
 	return {
 		'loopback': LnaLoopbackPermission,
 		'local': LnaLocalPermission,
@@ -54,11 +72,12 @@ export function getRequiredPermissionForAddressSpace(targetSpace: AddressSpace):
 	}[targetSpace] ;
 }
 
-export function getRequiredPermissionForAddressSpaces(targetSpace: DetectedAddressSpace, originSpace: DetectedAddressSpace) {
-	if (! permissionsEffective) return null;
+export async function getRequiredPermissionForAddressSpaces(targetSpace: DetectedAddressSpace, originSpace: DetectedAddressSpace) {
+	const support = await getBrowserSupport();
+	if (! support.LnaPermissionsEffective) return null;
 	const lessPublic = isLessPublic(targetSpace, originSpace);
 	const permission = targetSpace !== 'unknown'
-		? getRequiredPermissionForAddressSpace(targetSpace)
+		? await getRequiredPermissionForAddressSpace(targetSpace)
 		: undefined;
 
 	if (lessPublic === false || permission === null) return null;
@@ -66,30 +85,32 @@ export function getRequiredPermissionForAddressSpaces(targetSpace: DetectedAddre
 	return permission;
 }
 
-export function getRequiredPermissionName(url: URL, options?: LnaOptions) {
+export async function getRequiredPermissionName(url: URL, options?: LnaOptions) {
 	if ((options?.isWebSocket || url.protocol === 'ws:' || url.protocol === 'wss:') && getBrowserQuirks().webSocketsUnrestricted) {
 		return null;
 	}
-	return getRequiredPermissionForAddressSpaces(
+	return await getRequiredPermissionForAddressSpaces(
 		options?.overrides?.targetAddressSpace ?? guessAddressSpace(window.location.hostname),
 		options?.overrides?.originAddressSpace ?? guessAddressSpace(url.hostname),
 	)
 }
 
 export async function getRequiredPermission(url: URL, options?: LnaOptions) {
-	const name = getRequiredPermissionName(url, options);
+	const name = await getRequiredPermissionName(url, options);
 	return name ? await getLnaPermission(name) : name;
 }
 
 export async function getLnaPermission(name: LnaPermissionName) {
-	if (!PermissionSupport[name]) {
+	const support = await getBrowserSupport();
+	if (! support.PermissionNames.includes(name)) {
 		return null;
 	}
 	return await navigator.permissions.query({name} as unknown as { name: PermissionName });
 }
 
 export async function getLnaPermissionState(name: LnaPermissionName) {
-	if (!PermissionSupport[name]) {
+	const support = await getBrowserSupport();
+	if (! support.PermissionNames.includes(name)) {
 		return null;
 	}
 	return (await getLnaPermission(name))!.state;

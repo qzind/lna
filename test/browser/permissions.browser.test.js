@@ -1,11 +1,8 @@
 import {describe, expect, test} from 'vitest'
 import {commands} from 'vitest/browser';
 import {
-	getLnaPermissionState,
+	getLnaPermissionState, getBrowserSupport,
 	getRequiredPermissionForAddressSpaces,
-	LnaPermissionsSupported,
-	SplitPermissionsSupported,
-	PermissionSupport
 } from "src/permissions";
 import {getBrowserQuirks} from "../../src/quirks";
 import isBrowser from "src/browser.ts";
@@ -14,9 +11,8 @@ if (typeof window === 'undefined') {
 	throw new Error('This test must be run in a browser environment')
 }
 
-const supported = Object.entries(PermissionSupport)
-	.filter(([, s]) => s)
-	.map(([name]) => name);
+const Support = await getBrowserSupport();
+const supported = Support.PermissionNames;
 
 function expectedSupport() {
 	console.log('browser', navigator.userAgent);
@@ -82,13 +78,13 @@ describe('getRequiredPermissionForAddressSpaces', () => {
 		['unknown', 'loopback', 'loopback-network'], // Assuming 'unknown' can't be 'loopback'
 		['unknown', 'unknown', undefined],
 	];
-	if (!LnaPermissionsSupported || getBrowserQuirks().permissionsAreOptIn) {
+	if (!Support.LnaPermissionsEffective) {
 		cases = cases.map(([from, to]) => [from, to, null]);
-	} else if (!SplitPermissionsSupported) {
+	} else if (!Support.LnaSplitPermissions) {
 		cases = cases.map(([from, to, p]) => [from, to, p ? 'local-network-access' : p]);
 	}
 
-	test.each(cases)('from `%s` to `%s` requires `%s` permission', (from, to, expected) => {
-		expect(getRequiredPermissionForAddressSpaces(to, from)).toStrictEqual(expected);
+	test.each(cases)('from `%s` to `%s` requires `%s` permission', async (from, to, expected) => {
+		await expect(getRequiredPermissionForAddressSpaces(to, from)).resolves.toStrictEqual(expected);
 	})
 });

@@ -1,11 +1,10 @@
 import {describe, expect, test} from 'vitest'
 
-import {probeWebSocket, expectSuccessful, setPermission, targetUrl} from "./util";
+import {Support, probeWebSocket, expectSuccessful, setPermission, targetUrl} from "./util";
 import {getBrowserQuirks} from "../../src/quirks";
-import {LnaPermissionsSupported} from "../../src/permissions";
 
 const quirks = getBrowserQuirks();
-describe.runIf(LnaPermissionsSupported)('permissionsAreOptIn', () => {
+describe.runIf(Support.any)('permissionsAreOptIn', () => {
 	describe.runIf(quirks.permissionsAreOptIn)('is true', () => {
 		testPermissionIneffective('loopback', false);
 		testPermissionIneffective('local', false);
@@ -16,7 +15,7 @@ describe.runIf(LnaPermissionsSupported)('permissionsAreOptIn', () => {
 	});
 });
 
-describe.runIf(LnaPermissionsSupported)('webSocketsUnrestricted', () => {
+describe.runIf(Support.any)('webSocketsUnrestricted', () => {
 	describe.runIf(quirks.webSocketsUnrestricted)('is true', () => {
 		testPermissionIneffective('loopback', true);
 		testPermissionIneffective('local', true);

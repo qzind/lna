@@ -1,8 +1,10 @@
 import {commands} from "vitest/browser";
-import {JointPermissionSupported, SplitPermissionsSupported} from "src/permissions.js";
 import {AddressSpace} from "src/address-space.js";
 import {expect} from "vitest";
 import {connectWebSocket} from "../../src/wrappers.js";
+import {getBrowserSupport} from "../../src/permissions";
+
+export const Support = await getBrowserSupport();
 
 export function targetUrl(addressSpace: AddressSpace): string {
 	return getWindowPropString(`lna_${addressSpace}_success_url`);
@@ -49,9 +51,9 @@ export async function setLocalPermission(state: PermissionState) {
 }
 
 export async function setPermission(space: Exclude<AddressSpace, 'public'>, state: PermissionState) {
-	if (SplitPermissionsSupported) {
+	if (Support.LnaSplitPermissions) {
 		await commands.setPermissions({name: `${space}-network`}, state);
-	} else if (JointPermissionSupported) {
+	} else if (Support.LnaJointPermission) {
 		await commands.setPermissions({name: 'local-network-access'}, state);
 	}
 }

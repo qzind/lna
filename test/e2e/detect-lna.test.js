@@ -3,14 +3,13 @@ import {detectLna, LnaError} from "../../src";
 import {commands} from "vitest/browser";
 import {
 	getLnaPermissionState,
+	getBrowserSupport,
 	getRequiredPermissionForAddressSpace,
-	LnaPermissionsSupported,
-	SupportedPermissions
 } from "../../src/permissions";
 import {getBrowserQuirks} from "../../src/quirks";
 import {
-	probeWebSocket,
 	fetchPublic,
+	probeWebSocket,
 	setLocalPermission,
 	setLoopbackPermission,
 	targetFailUrl,
@@ -22,7 +21,8 @@ if (!window.lna_origin_address_space) {
 }
 
 const quirks = getBrowserQuirks();
-const permissionsEffective = LnaPermissionsSupported && !quirks.permissionsAreOptIn;
+const Support = await getBrowserSupport();
+const permissionsEffective = Support.LnaPermissionsEffective;
 
 const originAddressSpace = window.lna_origin_address_space;
 
@@ -45,7 +45,7 @@ async function expectDetectGranted(ws, targetSpace) {
 	await expectDetectConnectionFailure(
 		ws, targetSpace,
 		expect.objectContaining({
-			name: getRequiredPermissionForAddressSpace(targetSpace)
+			name: await getRequiredPermissionForAddressSpace(targetSpace)
 		}),
 	);
 }
@@ -85,8 +85,8 @@ async function expectDetectConnectionFailure(ws, targetSpace, permission) {
 	}));
 }
 
-test.runIf(LnaPermissionsSupported)('setPermissions command works', async () => {
-	for (const name of SupportedPermissions) {
+test.runIf(Support.PermissionNames.length)('setPermissions command works', async () => {
+	for (const name of Support.PermissionNames) {
 		for (const state of ['prompt', 'granted', 'denied']) {
 			await commands.setPermissions({name}, state);
 			expect(await getLnaPermissionState(name)).toEqual(state);
