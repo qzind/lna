@@ -5,6 +5,7 @@ import httpServerPlugin from "./vite/vite-plugin-http-server";
 import {AddressSpace, AddressSpaceOverrides} from "./util/address-space-override";
 
 import packageJson from './package.json' with {type: 'json'};
+import babel from "@rollup/plugin-babel";
 
 export const TestServerAddress = '127.0.0.1';
 export const TestServers = {
@@ -51,6 +52,23 @@ export default {
 			name: packageJson.name,
 			formats: ['es', 'umd'],
 		},
+		rollupOptions: {
+			plugins: [
+				babel({
+					babelHelpers: 'bundled',
+					targets: ['cover 99.9%', 'IE 11'],
+					presets: [
+						[
+							'@babel/preset-env',
+							{
+								useBuiltIns: 'usage',
+								corejs: "3.49",
+							}
+						],
+					],
+				}),
+			],
+		}
 	},
 	plugins: [
 		httpServerPlugin({port: TestServers.success.public}),
