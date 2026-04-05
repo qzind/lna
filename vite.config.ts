@@ -49,7 +49,7 @@ export default {
 		lib: {
 			entry: path.resolve(__dirname, 'src/index.ts'),
 			name: packageJson.name,
-			formats: ['es'],
+			formats: ['es', 'umd'],
 		},
 	},
 	plugins: [
