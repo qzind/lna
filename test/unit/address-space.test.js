@@ -26,7 +26,8 @@ describe('guessAddressSpace', () => {
 			'fc00::', 'fdff:ffff:ffff:ffff:ffff:ffff:ffff:ffff',  // Unique local
 			'2002:c0a8:0001::', // 6to4
 			'::ffff:10.0.0.1', // IPv4-mapped IPv6
-			'host.local', 'host.internal',
+			'host.local', 'another.host.internal', 'host.home.arpa',
+			'internal.example.com', 'lan.business.com'
 		])('%s', (address) => {
 			expect(guessAddressSpace(address)).toBe('local');
 		})

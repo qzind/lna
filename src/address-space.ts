@@ -17,7 +17,11 @@ export function guessAddressSpace(hostname: string): DetectedAddressSpace {
 		return "loopback";
 	}
 
-	if (host.match('.*\.(local|internal)$')) {
+	if (host.match('\.(local|internal|home|lan|home\.arpa)$')) {
+		return "local";
+	}
+
+	if (host.match('^(internal|lan)\.')) {
 		return "local";
 	}
 
