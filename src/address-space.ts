@@ -1,7 +1,7 @@
 import {Address4, Address6} from 'ip-address';
 
 export type AddressSpace = "loopback" | "local" | "public";
-export type DetectedAddressSpace = AddressSpace | "unknown";
+export type DetectedAddressSpace = AddressSpace | undefined;
 
 export function guessAddressSpace(hostname: string): DetectedAddressSpace {
 	let host = hostname.toLowerCase();
@@ -17,11 +17,11 @@ export function guessAddressSpace(hostname: string): DetectedAddressSpace {
 		return "loopback";
 	}
 
-	if (host.match('.*\.(local|internal)')) {
+	if (host.match('.*\.(local|internal)$')) {
 		return "local";
 	}
 
-	return "public";
+	return undefined;
 }
 
 function getIp4AddressSpace(ip: Address4): AddressSpace {
@@ -55,15 +55,13 @@ function getIp6AddressSpace(ip: Address6): AddressSpace {
 	return "public";
 }
 
-// Assumes that loopback is always detected, i.e. "unknown" can't include "loopback"
+// Assumes that loopback is always detected, i.e. undefined can't include "loopback"
 export function isLessPublic(lhs: DetectedAddressSpace, rhs: DetectedAddressSpace): boolean | undefined {
 	if ((lhs === "loopback" && rhs !== "loopback") ||
 		(lhs === "local" && rhs === "public")) {
 		return true;
 	}
-	if (rhs === "loopback" || lhs === "public" ||
-		(lhs !== "unknown" && rhs !== "unknown")
-	) {
+	if (rhs === "loopback" || lhs === "public" || (lhs && rhs)) {
 		return false;
 	}
 	return undefined;

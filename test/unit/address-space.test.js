@@ -37,9 +37,16 @@ describe('guessAddressSpace', () => {
 			'2001:4860:4860::8888', '2606:4700:4700::1111', '2001:db8::ff00:42:8329',
 			'::ffff:1.1.1.1', // IPv4-mapped IPv6
 			'2002:0404:0404::', // 6to4
-			'www.google.com',
 		])('%s', (address) => {
 			expect(guessAddressSpace(address)).toBe('public');
+		})
+	})
+	describe('public', () => {
+		test.each([
+			'www.google.com',
+			'www.your-local-restaurant.com',
+		])('%s', (address) => {
+			expect(guessAddressSpace(address)).toBe(undefined);
 		})
 	})
 })
@@ -49,22 +56,22 @@ describe('isLessPublic', () => {
 		['loopback', 'loopback', false],
 		['loopback', 'local', true],
 		['loopback', 'public', true],
-		['loopback', 'unknown', true],
+		['loopback', undefined, true],
 
 		['local', 'loopback', false],
 		['local', 'local', false],
 		['local', 'public', true],
-		['local', 'unknown', undefined],
+		['local', undefined, undefined],
 
 		['public', 'loopback', false],
 		['public', 'local', false],
 		['public', 'public', false],
-		['public', 'unknown', false],
+		['public', undefined, false],
 
-		['unknown', 'loopback', false],
-		['unknown', 'local', undefined],
-		['unknown', 'public', undefined],
-		['unknown', 'unknown', undefined],
+		[undefined, 'loopback', false],
+		[undefined, 'local', undefined],
+		[undefined, 'public', undefined],
+		[undefined, undefined, undefined],
 	])('"%s" less public than "%s": %s', (lhs, rhs, expected) => {
 		expect(isLessPublic(lhs, rhs)).toBe(expected);
 	})

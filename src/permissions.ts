@@ -76,7 +76,7 @@ export async function getRequiredPermissionForAddressSpaces(targetSpace: Detecte
 	const support = await getBrowserSupport();
 	if (! support.LnaPermissionsEffective) return null;
 	const lessPublic = isLessPublic(targetSpace, originSpace);
-	const permission = targetSpace !== 'unknown'
+	const permission = targetSpace
 		? await getRequiredPermissionForAddressSpace(targetSpace)
 		: undefined;
 

@@ -64,19 +64,19 @@ describe('getRequiredPermissionForAddressSpaces', () => {
 		['public', 'public', null],
 		['public', 'local', 'local-network'],
 		['public', 'loopback', 'loopback-network'],
-		['public', 'unknown', undefined],
+		['public', undefined, undefined],
 		['local', 'public', null],
 		['local', 'local', null],
 		['local', 'loopback', 'loopback-network'],
-		['local', 'unknown', undefined],
+		['local', undefined, undefined],
 		['loopback', 'public', null],
 		['loopback', 'local', null],
 		['loopback', 'loopback', null],
-		['loopback', 'unknown', null],
-		['unknown', 'public', null],
-		['unknown', 'local', undefined],
-		['unknown', 'loopback', 'loopback-network'], // Assuming 'unknown' can't be 'loopback'
-		['unknown', 'unknown', undefined],
+		['loopback', undefined, null],
+		[undefined, 'public', null],
+		[undefined, 'local', undefined],
+		[undefined, 'loopback', 'loopback-network'], // Assuming undefined can't be 'loopback'
+		[undefined, undefined, undefined],
 	];
 	if (!Support.LnaPermissionsEffective) {
 		cases = cases.map(([from, to]) => [from, to, null]);
