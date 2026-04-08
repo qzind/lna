@@ -7,6 +7,8 @@ import {AddressSpace, AddressSpaceOverrides} from "./util/address-space-override
 import packageJson from './package.json' with {type: 'json'};
 import babel from "@rollup/plugin-babel";
 
+import babelOptions from './rollup.babel.config.ts';
+
 export const TestServerAddress = '127.0.0.1';
 export const TestServers = {
 	success: {
@@ -54,25 +56,7 @@ export default {
 		},
 		rollupOptions: {
 			plugins: [
-				babel({
-					babelHelpers: 'bundled',
-					extensions: ['.js', '.ts'],
-					targets: ['cover 99.9%', 'IE 11'],
-					// Exclude every package except ip-address, avoids core-js
-					// itself being transpiled, causing errors.
-					// https://github.com/rollup/plugins/tree/master/packages/babel#external-dependencies
-					// https://gist.github.com/bwindels/7eff8a2cf02ba6ad13ace061a8d68c3c
-					exclude: /node_modules\/(?!ip-address\/)/,
-					presets: [
-						[
-							'@babel/preset-env',
-							{
-								useBuiltIns: 'usage',
-								corejs: "3.49",
-							}
-						],
-					],
-				}),
+				babel(babelOptions),
 			],
 		}
 	},
