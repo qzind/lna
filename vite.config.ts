@@ -50,13 +50,18 @@ export default {
 		lib: {
 			entry: path.resolve(__dirname, 'src/index.ts'),
 			name: packageJson.name,
-			formats: ['es', 'umd'],
+			formats: ['umd'],
 		},
 		rollupOptions: {
 			plugins: [
 				babel({
 					babelHelpers: 'bundled',
 					targets: ['cover 99.9%', 'IE 11'],
+					// Exclude every package except ip-address, avoids core-js
+					// itself being transpiled, causing errors.
+					// https://github.com/rollup/plugins/tree/master/packages/babel#external-dependencies
+					// https://gist.github.com/bwindels/7eff8a2cf02ba6ad13ace061a8d68c3c
+					exclude: /node_modules\/(?!ip-address\/)/,
 					presets: [
 						[
 							'@babel/preset-env',
