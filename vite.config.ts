@@ -56,6 +56,7 @@ export default {
 			plugins: [
 				babel({
 					babelHelpers: 'bundled',
+					extensions: ['.js', '.ts'],
 					targets: ['cover 99.9%', 'IE 11'],
 					// Exclude every package except ip-address, avoids core-js
 					// itself being transpiled, causing errors.
