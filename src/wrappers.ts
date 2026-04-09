@@ -24,7 +24,7 @@ export async function connectWebSocket(...args: WebSocketArgs): Promise<WebSocke
 		const resolveFn = () => {
 			resolve(ws);
 			cleanup();
-		};
+		}
 		const rejectFn = () => {
 			reject(arguments);
 			cleanup();
@@ -32,9 +32,11 @@ export async function connectWebSocket(...args: WebSocketArgs): Promise<WebSocke
 		const cleanup = () => {
 			ws.removeEventListener('open', resolveFn);
 			ws.removeEventListener('error', rejectFn);
+			ws.removeEventListener('close', rejectFn);
 		}
 		ws.addEventListener('open', resolveFn);
 		ws.addEventListener('error', rejectFn);
+		ws.addEventListener('close', rejectFn);
 	});
 }
 
