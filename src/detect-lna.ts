@@ -6,7 +6,7 @@ import {
 	LnaPermissionStates
 } from "./permissions.js";
 import {LnaError} from "./error.js";
-import {LnaOptions} from "./options.js";
+import {defaultOptions, LnaOptions} from "./options.js";
 
 // After a failed connection attempt, returns the permission that applied to the request.
 // Returns `null` if the request didn't require a permission, or `undefined` if it couldn't be
@@ -47,6 +47,7 @@ export async function detectLna<R>(
 	options?: LnaOptions
 ): Promisify<R> {
 	const url = getUrl(resource);
+	options ??= defaultOptions;
 
 	const statesBefore = await getLnaPermissionStates();
 	try {
@@ -74,6 +75,7 @@ export async function detectLnaError<E>(
 	},
 	options?: Omit<LnaOptions, 'isConnectionError'>,
 ): Promise<LnaError> {
+	options ??= defaultOptions;
 	const permission = await getPermissionAfterError(
 		context.url, context.permissionStatesBefore, options,
 	);

@@ -10,3 +10,5 @@ export type LnaOptions = {
 	isWebSocket?: boolean,
 	isConnectionError?: (err: unknown) => boolean,
 }
+
+export const defaultOptions: LnaOptions = {};

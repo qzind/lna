@@ -4,7 +4,8 @@ export {
 	makeFetchLna,
 	makeWebSocketLna,
 	fetchLna,
-	webSocketLna
+	webSocketLna,
 } from "./wrappers.js";
 
 export {LnaError} from "./error.js";
+export {defaultOptions} from "./options.js";
