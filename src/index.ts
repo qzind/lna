@@ -9,3 +9,16 @@ export {
 
 export {LnaError} from "./error.js";
 export {defaultOptions} from "./options.js";
+
+export {
+	getRequiredPermissionName,
+	getRequiredPermission,
+} from './permissions'
+
+export {
+	guessAddressSpace,
+} from './address-space'
+
+export {
+	getBrowserQuirks
+} from './quirks'
