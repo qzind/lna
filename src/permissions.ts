@@ -54,7 +54,6 @@ export async function getBrowserSupport(): Promise<BrowserSupport> {
 
 	return {
 		PermissionNames: SupportedPermissions,
-		LnaPermissions: anySupported,
 		LnaJointPermission: PermissionSupport[LnaJointPermission],
 		LnaSplitPermissions: PermissionSupport[LnaLoopbackPermission] && PermissionSupport[LnaLocalPermission],
 		LnaPermissionsEffective: anySupported && ! getBrowserQuirks().permissionsAreOptIn,
