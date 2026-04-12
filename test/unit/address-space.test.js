@@ -42,12 +42,13 @@ describe('guessAddressSpace', () => {
 			expect(guessAddressSpace(address)).toBe('public');
 		})
 	})
-	describe('public', () => {
+	describe('generic domains', () => {
 		test.each([
 			'www.google.com',
 			'www.your-local-restaurant.com',
 		])('%s', (address) => {
 			expect(guessAddressSpace(address)).toBe(undefined);
+			expect(guessAddressSpace(address, {defaultAddressSpace: 'public'})).toBe('public');
 		})
 	})
 })
