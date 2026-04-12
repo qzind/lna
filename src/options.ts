@@ -7,8 +7,12 @@ export type AddressSpaceOverrides = {
 
 export type LnaOptions = {
 	overrides?: AddressSpaceOverrides,
+	// Address space to assume for domains
+	defaultAddressSpace?: AddressSpace,
 	isWebSocket?: boolean,
 	isConnectionError?: (err: unknown) => boolean,
 }
 
-export const defaultOptions: LnaOptions = {};
+export const defaultOptions: LnaOptions = {
+	defaultAddressSpace: 'public',
+};

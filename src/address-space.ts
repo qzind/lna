@@ -1,9 +1,10 @@
 import {Address4, Address6} from 'ip-address';
+import {LnaOptions} from "./options";
 
 export type AddressSpace = "loopback" | "local" | "public";
 export type DetectedAddressSpace = AddressSpace | undefined;
 
-export function guessAddressSpace(hostname: string): DetectedAddressSpace {
+export function guessAddressSpace(hostname: string, options?: LnaOptions): DetectedAddressSpace {
 	let host = hostname.toLowerCase();
 
 	// Remove IPv6 host brackets
@@ -25,7 +26,7 @@ export function guessAddressSpace(hostname: string): DetectedAddressSpace {
 		return "local";
 	}
 
-	return undefined;
+	return options?.defaultAddressSpace ?? undefined;
 }
 
 function getIp4AddressSpace(ip: Address4): AddressSpace {

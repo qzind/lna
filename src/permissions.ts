@@ -90,8 +90,8 @@ export async function getRequiredPermissionName(url: URL, options?: LnaOptions) 
 		return null;
 	}
 	return await getRequiredPermissionForAddressSpaces(
-		options?.overrides?.targetAddressSpace ?? guessAddressSpace(window.location.hostname),
-		options?.overrides?.originAddressSpace ?? guessAddressSpace(url.hostname),
+		options?.overrides?.targetAddressSpace ?? guessAddressSpace(window.location.hostname, options),
+		options?.overrides?.originAddressSpace ?? guessAddressSpace(url.hostname, options),
 	)
 }
 
