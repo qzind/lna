@@ -13,6 +13,9 @@ export {defaultOptions} from "./options.js";
 export {
 	getRequiredPermissionName,
 	getRequiredPermission,
+	getBrowserSupport,
+	getRequiredPermissionForAddressSpace,
+	getRequiredPermissionForAddressSpaces,
 } from './permissions'
 
 export {
