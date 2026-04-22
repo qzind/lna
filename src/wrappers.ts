@@ -1,12 +1,12 @@
 import {detectLna, Promisify, Resource} from "./detect-lna.js";
-import {defaultOptions, LnaOptions} from "./options.js";
+import {LnaOptions} from "./options.js";
 
 export function makeLnaWrapper<
 	F extends (...args: Args) => any,
 	Args extends [Resource, ...any[]] = Parameters<F>,
 >(f: F, options?: LnaOptions, overrides?: LnaOptions): (...args: Args) => Promisify<ReturnType<F>> {
 	return (...args) => detectLna(
-		args[0], () => f(...args), {...(options ?? defaultOptions), ...overrides}
+		args[0], () => f(...args), {...options, ...overrides}
 	);
 }
 

@@ -16,3 +16,7 @@ export type LnaOptions = {
 export const defaultOptions: LnaOptions = {
 	defaultAddressSpace: 'public',
 };
+
+export function getOptions(options?: LnaOptions) {
+	return {...defaultOptions, ...options};
+}
