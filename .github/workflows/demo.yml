@@ -39,7 +39,7 @@ jobs:
       - name: Build jna bundle
         run: |
           yarn build
-          cp dist/lna.umd.cjs tray-demo/js/sample/
+          cp dist/umd/lna.js tray-demo/js/sample/
 
       - name: Setup Pages
         uses: actions/configure-pages@v6
