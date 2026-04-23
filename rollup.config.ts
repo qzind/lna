@@ -3,20 +3,40 @@ import babel from "@rollup/plugin-babel";
 import typescript from "@rollup/plugin-typescript";
 import nodeResolve from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
+import terser from "@rollup/plugin-terser";
 
 import babelOptions from './rollup.babel.config.ts';
 
-export default {
+const makeConfig = ({format, minify}: {
+	format: RollupOptions['output']['format'],
+	minify: boolean,
+}): RollupOptions => ({
 	input: 'src/index.ts',
 	output: {
-		file: 'dist/lna.umd.cjs',
-		format: 'umd',
+		file: `dist/${format}/lna${minify ? '.min.js' : '.js'}`,
+		format: format,
 		name: 'lna',
+		sourcemap: true,
 	},
 	plugins: [
 		typescript(),
 		commonjs(),
 		nodeResolve(),
-		babel(babelOptions),
+		babel({
+			...babelOptions,
+			targets: format === 'esm'
+				? {
+					browsers: 'defaults',
+					esmodules: true,
+				} : babelOptions.targets,
+		}),
+		...(minify ? [terser()] : []),
 	],
-} satisfies RollupOptions;
+});
+
+export default [
+	makeConfig({format: 'umd', minify: true}),
+	makeConfig({format: 'umd', minify: false}),
+	makeConfig({format: 'esm', minify: true}),
+	makeConfig({format: 'esm', minify: false}),
+];

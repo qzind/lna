@@ -2,7 +2,12 @@
   "name": "lna",
   "version": "0.0.1",
   "description": "Helpers for Local Network Access restrictions",
-  "main": "dist/index.js",
+  "main": "./dist/umd/lna.js",
+  "module": "./dist/esm/lna.js",
+  "exports": {
+    "import": "./dist/esm/lna.js",
+    "require": "./dist/umd/lna.js"
+  },
   "scripts": {
     "build": "rollup -c",
     "test": "vitest",
@@ -19,6 +24,7 @@
     "@rollup/plugin-babel": "^7.0.0",
     "@rollup/plugin-commonjs": "^29.0.2",
     "@rollup/plugin-node-resolve": "^16.0.3",
+    "@rollup/plugin-terser": "^1.0.0",
     "@rollup/plugin-typescript": "^12.3.0",
     "@types/babel__core": "^7",
     "@types/babel__preset-env": "^7",
