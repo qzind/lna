@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * @version 2.2.6-SNAPSHOT
+ * @version 2.2.6
  * @overview QZ Tray Connector
  * @license LGPL-2.1-only
  * <p/>
@@ -24,11 +24,36 @@ var qz = (function() {
         };
     }
 
+    if (!Array.from) {
+        Array.from = function(object) {
+            return [].slice.call(object);
+        };
+    }
+
+    if (!String.prototype.padStart) {
+        String.prototype.padStart = function padStart(targetLength, padString) {
+            targetLength = targetLength >> 0; // truncate if number or convert non-number to 0
+            padString = String(typeof padString !== 'undefined' ? padString : ' ');
+
+            if (this.length >= targetLength) {
+                return String(this);
+            }
+
+            var gapSize = targetLength - this.length;
+            var padding = "";
+            while (padding.length < gapSize) {
+                padding += padString;
+            }
+
+            return padding.slice(0, gapSize) + String(this);
+        };
+    }
+
 ///// PRIVATE METHODS /////
 
     var _qz = {
         TITLE: "QZ Tray",
-        VERSION: "2.2.6-SNAPSHOT",                              //must match @version above
+        VERSION: "2.2.6",                              //must match @version above
         DEBUG: false,
 
         log: {
@@ -62,6 +87,8 @@ var qz = (function() {
                 host: ["localhost", "localhost.qz.io"], //hosts QZ Tray can be running on
                 hostIndex: 0,                           //internal var - index on host array
                 usingSecure: true,                      //boolean use of secure protocol
+                usingSurf: true,                        //append suffix to non-qualified hostnames
+                surfDomain: "qz.surf",                  //surf suffix to append
                 protocol: {
                     secure: "wss://",                   //secure websocket
                     insecure: "ws://"                   //insecure websocket
@@ -78,28 +105,41 @@ var qz = (function() {
 
             setup: {
                 webSocketPromise: function(address) {
-                    var ws;
+                    var ws, onError, onOpen;
                     return _qz.tools.promise(function(resolve, reject) {
                         ws = new _qz.tools.ws(address);
-                        ws.onopen = function() {
+                        _qz.websocket.connection = ws;
+                        onOpen = function() {
                             resolve(ws);
-                        }
+                        };
+                        onError = function(e) {
+                            _qz.websocket.connection = null;
+                            reject(e);
+                        };
+                        ws.addEventListener("open", onOpen);
+                        ws.addEventListener("error", onError);
                         // Older Safari versions may trigger close event instead of error event.
-                        ws.onclose = ws.onerror = reject;
+                        ws.addEventListener("close", onError);
                     }).finally(function() {
-                        if (ws) {
-                            ws.onopen = ws.onerror = ws.onclose = null;
-                        }
+                        ws.removeEventListener("open", onOpen);
+                        ws.removeEventListener("error", onError);
+                        ws.removeEventListener("close", onError);
                     });
                 },
 
                 connectToAddress: function(address) {
+                    var lna = _qz.tools.getLna();
+
                     _qz.log.trace("Attempting connection", address);
                     var wsPromise;
-                    if (window.lna && window.lna.webSocketLna) {
-                        _qz.log.trace("Using lna.js WebSocket");
-                        wsPromise = window.lna.webSocketLna(address);
+                    if (lna) {
+                        _qz.log.trace("Connecting with lna.js");
+                        wsPromise = lna.detectLna(address, _qz.websocket.setup.webSocketPromise, {
+                            isWebSocket: true,
+                            defaultAddressSpace: 'public'
+                        });
                     } else {
+                        _qz.log.trace("Connecting without lna.js");
                         wsPromise = _qz.websocket.setup.webSocketPromise(address);
                     }
                     return wsPromise.catch(function(evt) {
@@ -107,7 +147,7 @@ var qz = (function() {
                             ? "Connection attempt denied by Local Network Access restrictions"
                             : "Unable to establish connection with " + _qz.TITLE;
                         var err = new Error(msg);
-                        if (window.lna && evt instanceof window.lna.LnaError) {
+                        if (lna && evt instanceof lna.LnaError) {
                             err.denied = evt.denied;
                             err.permission = evt.permission;
                         }
@@ -175,13 +215,11 @@ var qz = (function() {
                     }
 
                     var promise = _qz.websocket.setup.connectToAddress(address);
-                    _qz.websocket.connection = null;
 
                     promise.then(
                         //called on successful connection to qz, begins setup of websocket calls and resolves connect promise after certificate is sent
-                        function(ws) {
+                        function() {
                             _qz.log.info("Established connection with " + _qz.TITLE + " on " + address);
-                            _qz.websocket.connection = ws;
                             _qz.websocket.setup.openConnection({ resolve: resolve, reject: reject });
 
                             if (config.keepAlive > 0) {
@@ -696,6 +734,46 @@ var qz = (function() {
             },
 
             ws: typeof WebSocket !== 'undefined' ? WebSocket : null,
+            lna: undefined,
+
+            getLna: function() {
+                if (_qz.tools.lna === undefined) {
+                    _qz.tools.lna = _qz.tools.loadLna() || null;
+                }
+                return _qz.tools.lna;
+            },
+
+            loadLna: function() {
+                if (typeof window !== 'undefined' && window.lna && window.lna.detectLna) {
+                    return window.lna;
+                }
+                if (typeof require === 'function') {
+                    try {
+                        return require('lna');
+                    } catch (e) {
+                        _qz.log.warn("Unable to load LNA library", e);
+                    }
+                }
+            },
+
+            /**
+             * Normalize a host string by appending a "surf"" tld if necessary.
+             * Ignored if "usingSurf" is set to false
+             */
+            appendSurf: function(host) {
+                return _qz.tools.isQualified(host) ? host : host + "." + _qz.websocket.connectConfig.surfDomain;
+            },
+
+            /**
+             * Returns if the provided hostname is fully-qualified either as a domain
+             * name or as an ip address. Used to determine whether to append a "surf" suffix
+             * (e.g. ".qz.surf") at the end.
+             */
+            isQualified: function(host) {
+                return (host.toLowerCase() === 'localhost') // essentially qualified
+                    || host.indexOf('.') !== -1 // ipv4
+                    || host.indexOf(':') !== -1; // ipv6
+            },
 
             absolute: function(loc) {
                 if (typeof window !== 'undefined' && typeof document.createElement === 'function') {
@@ -1248,6 +1326,12 @@ var qz = (function() {
                     //ensure any hosts are passed to internals as an array
                     if (typeof options.host !== 'undefined' && !Array.isArray(options.host)) {
                         options.host = [options.host];
+                        //append "surf" domain if enabled
+                        if(_qz.websocket.connectConfig.usingSurf) {
+                            for(var i = 0; i < options.host.length; i++) {
+                                options.host[i] = _qz.tools.appendSurf(options.host[i]);
+                            }
+                        }
                     }
 
                     _qz.websocket.shutdown = false; //reset state for new connection attempt
@@ -1327,6 +1411,33 @@ var qz = (function() {
              */
             setClosedCallbacks: function(calls) {
                 _qz.websocket.closedCallbacks = calls;
+            },
+
+            /**
+             * Whether to append the "surf" domain (e.g. "qz.surf") to the end of non-qualified hosts (except "localhost")
+             *
+             * @param {boolean} usingSurf=true Toggles automatic "surf" domain appending
+             * @since 2.2.6
+             *
+             * @memberof qz.websocket
+             */
+            setUsingSurf: function(usingSurf) {
+                _qz.websocket.connectConfig.usingSurf = usingSurf;
+            },
+
+            /**
+             * The domain to automagically append to non-qualified hosts, such as "qz.surf", or "example.com"
+             *
+             * @param {string} surfDomain="qz.surf" The domain to append to non-qualified hosts.
+             * @since 2.2.6
+             *
+             * @memberof qz.websocket
+             */
+            setSurfDomain: function(surfDomain) {
+                if (surfDomain.indexOf('.') === 0) {
+                    surfDomain = surfDomain.substring(1);
+                }
+                _qz.websocket.connectConfig.surfDomain = surfDomain;
             },
 
             /**
@@ -1540,6 +1651,7 @@ var qz = (function() {
              *  @param {Object} [options.size=null] Paper size.
              *   @param {number} [options.size.width=null] Page width.
              *   @param {number} [options.size.height=null] Page height.
+             *   @param {boolean} [options.size.custom=false] If the provided page size is not included in the driver.
              *  @param {string} [options.units='in'] Page units, applies to paper size, margins, and density. Valid value <code>[in | cm | mm]</code>
              *
              *  @param {boolean} [options.forceRaw=false] Print the specified raw data using direct method, skipping the driver.  Not yet supported on Windows.
