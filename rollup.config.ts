@@ -4,6 +4,7 @@ import typescript from "@rollup/plugin-typescript";
 import nodeResolve from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
 import terser from "@rollup/plugin-terser";
+import { dts } from "rollup-plugin-dts"
 
 import pkg from './package.json' with {type: 'json'};
 import babelOptions from './rollup.babel.config.ts';
@@ -20,7 +21,10 @@ function makeConfig(conf: Partial<RollupOptions & { plugins?: Plugin[] }>): Roll
 			? conf.output.map(o => ({...outputOptions, ...o}))
 			: {...outputOptions, ...conf.output},
 		plugins: [
-			typescript(),
+			typescript({
+				declaration: true,
+				declarationDir: 'dist/dts',
+			}),
 			commonjs(),
 			nodeResolve(),
 			...(conf.plugins ?? []),
@@ -60,4 +64,11 @@ export default [
 			format: 'cjs',
 		},
 	}),
+	{
+		input: './dist/dts/index.d.ts',
+		output: {
+			file: pkg.types,
+		},
+		plugins: [dts()],
+	}
 ] satisfies RollupOptions[];
