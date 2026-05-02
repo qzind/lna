@@ -2,11 +2,11 @@
   "name": "lna",
   "version": "0.0.1",
   "description": "Helpers for Local Network Access restrictions",
-  "main": "./dist/umd/lna.js",
-  "module": "./dist/esm/lna.js",
+  "main": "./dist/lna.cjs",
+  "module": "./dist/lna.mjs",
   "exports": {
-    "import": "./dist/esm/lna.js",
-    "require": "./dist/umd/lna.js"
+    "import": "./dist/lna.mjs",
+    "require": "./dist/lna.cjs"
   },
   "scripts": {
     "build": "rollup -c",
