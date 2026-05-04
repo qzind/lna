@@ -19,10 +19,14 @@ function expectedSupport() {
 	if (isBrowser('safari')) {
 		return [];
 	}
-	if (isBrowser('firefox', '<', 150)) {
+	if (isBrowser('firefox', '<', 149)) {
 		return [];
 	}
-	if (isBrowser('firefox', '>=', 150)) {
+	if (isBrowser('firefox', '<', 151)) {
+		// Unless ETP is set to strict
+		return [];
+	}
+	if (isBrowser('firefox')) {
 		return ['loopback-network', 'local-network'];
 	}
 	if (isBrowser('chrome', '<', 136) ||
