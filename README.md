@@ -2,17 +2,11 @@
 
 JS client-side helpers for evaluating Local Network Access restrictions.
 
-Currently tested on
-- Chrome 135 to 146
-- Firefox 148 and Firefox Nightly 150
-- Edge 144 to 147
-- Safari 26.3
-
 ## API
 
 ### Low-level functions
 
-At its core, the API ceneters around a single function `detectLna`:
+At its core, the API centers around a single function `detectLna`:
 
 ```typescript
 declare async function detectLna<R>(
@@ -35,12 +29,13 @@ inaccurate) automatic detection be bypassed using the `options` parameter:
 
 ```typescript
 type LnaOptions = {
-  override?: {
-    targetAddressSpace?: AddressSpace,
-    originAddressSpace?: AddressSpace,
-  },
-  isWebSocket?: boolean,
-  isConnectionError?: (error: unknown) => boolean,
+	override?: {
+		targetAddressSpace?: AddressSpace,
+		originAddressSpace?: AddressSpace,
+	},
+	defaultAddressSpace?: AddressSpace, // Address space to assume for public domains
+	isWebSocket?: boolean,
+	isConnectionError?: (error: unknown) => boolean,
 }
 ```
 
