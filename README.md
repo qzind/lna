@@ -46,20 +46,6 @@ type LnaOptions = {
 
 where `AddressSpace` is one of `"local"`, `"loopback"` or `"public"`.
 
-### High-level functions
-
-There's a couple of convenience wrappers around `detectLna` to enable `LnaError` throwing in common
-use cases:
-
-- `makeFetchLna(options?: LnaOptions)` creates a function that's compatible with [
-  `window.fetch`](https://developer.mozilla.org/en-US/docs/Web/API/Window/fetch)
-- `makeWebSocketLna(options?: LnaOptions)` creates a function that takes the same arguments as the
-  [`WebSocket` constructor](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/WebSocket)
-  and returns a `Promise<WebSocket>` that resolves when the connection is opened, or rejects with an
-  `LnaError` if applicable.
-- `fetchLna` and `webSocketLna` are provided as the results of `makeFetchLna` and `makeWebSocketLna`
-  respectively, with no options.
-
 ## Example usage
 
 ```typescript
