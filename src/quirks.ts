@@ -13,7 +13,7 @@ export type BrowserQuirks = Partial<{
 export function getBrowserQuirks(): BrowserQuirks {
 	const q: BrowserQuirks = {};
 
-	if (is('edge', '<=', 147) ||
+	if (is('edge', '<', 143) ||
 		is('chrome', '<', 142)) {
 		// Official Chrome communication indicates that permissions should work
 		// starting with v138 if opting into Dev Trial, but testing shows that
@@ -25,7 +25,8 @@ export function getBrowserQuirks(): BrowserQuirks {
 	}
 	// Chrome announced to enable LNA restrictions in v147
 	// Edge has no such announcement yet: https://learn.microsoft.com/en-us/deployedge/ms-edge-local-network-access
-	if (is('chrome', '<', 147) || is('edge')) {
+	if (is('chrome', '<', 147) ||
+		is('edge', '<', 147)) {
 		q.webSocketsUnrestricted = true;
 	}
 

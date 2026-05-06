@@ -92,6 +92,7 @@ function instance(
 				'ms:edgeOptions': {
 					args: [
 						'disable-field-trial-config',
+						...ChromeAddressSpaceOverridesArgs(addressSpaceOverrides),
 					],
 				},
 				'moz:firefoxOptions': {
@@ -131,9 +132,9 @@ const browsers = Object.entries({
 		'nightly_152.0a1',
 	],
 	edge: [
-		'144', '145', '146',
-		['beta', '147'],
-		// ['canary', '148'], No Linux edgedriver released yet
+		'142', // Last version without LNA restrictions by default
+		'143', '144', '145', '146', '147',
+		['canary', '148'],
 	],
 	safari: [
 		'stable',
