@@ -67,7 +67,7 @@ export async function detectLna<R>(
 	}
 }
 
-export async function detectLnaError<E>(
+async function detectLnaError<E>(
 	context: {
 		error: E,
 		url: URL,
