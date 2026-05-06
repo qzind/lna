@@ -39,8 +39,6 @@ try {
 
 ## API
 
-### Low-level functions
-
 The API consists of a single function `detectLna`:
 
 ```typescript
