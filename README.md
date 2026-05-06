@@ -1,12 +1,47 @@
 # lna.js
 
-JS client-side helpers for evaluating Local Network Access restrictions.
+JS browser library for trying to determine whether a connection failed due to
+denied [Local Network Access](https://wicg.github.io/local-network-access/)
+permissions.
+
+## Example
+
+```js
+import {detectLna, LnaError} from "lna.js";
+
+try {
+	await detectLna("http://127.0.0.1:8000", fetch)
+} catch (e) {
+	if (e instanceof LnaError && e.denied) {
+		// Teach the user a lesson about clicking "no" on popups
+	} else {
+		// Failed for another or for an unknown reason, display error message
+		throw e;
+	}
+}
+```
+
+## Installation
+
+- If you're using a bundler for your project, you can install the package from npm:
+
+  ```bash
+  npm install lna.js
+  ```
+
+- If you're using a browser environment without a bundler, you can include the script directly from
+  a CDN, e.g.
+
+  ```html
+  <script src="https://cdn.jsdelivr.net/npm/lna@0.1/dist/lna.bundle.min.js"></script>
+  ```
+  The library will be available as global variable `lna`.
 
 ## API
 
 ### Low-level functions
 
-At its core, the API centers around a single function `detectLna`:
+The API consists of a single function `detectLna`:
 
 ```typescript
 declare async function detectLna<R>(
@@ -41,21 +76,4 @@ type LnaOptions = {
 
 where `AddressSpace` is one of `"local"`, `"loopback"` or `"public"`.
 
-## Example usage
-
-```typescript
-try {
-	await detectLna("http://127.0.0.1:8000", fetch)
-} catch (e) {
-	if (e instanceof LnaError) {
-		if (e.denied) {
-			// Teach the user a lesson about clicking "no" on popups
-		} else {
-			// Failed for another reason, display error message
-		}
-	} else {
-		// Other error, such as invalid URL
-		throw e;
-	}
-}
-```
+You can also globally configure by modifying the exported `defaultOptions`.
