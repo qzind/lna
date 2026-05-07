@@ -21,12 +21,29 @@ try {
 }
 ```
 
+## Limitations
+
+- Public domain names in origin or target address are not resolved, but assumed to be in `public`.
+  If you have a domain `example.com` that resolves to a local IP address, you should override this
+  behavior using `options.defaultAddressSpace` or `options.override`.
+- Browser settings or policies (such as Chrome's [LocalNetworkAccessAllowedForUrls](https://chromeenterprise.google/intl/en_ca/policies/local-network-access-allowed-for-urls/))
+  may change whether permissions are required for a given request, with no way for the library to
+  know about it.
+
 ## Installation
+
+We provide three compiled variants of the library:
+
+- `dist/lna.bundle[.min].js`: IIFE bundle for direct use in browsers, transpiled with bundled dependencies and polyfills for older browsers. API is available as global variable `lna`.
+- `dist/lna.mjs`: ECMAScript module for use with bundlers.
+- `dist/lna.cjs`: CommonJS module for use with bundlers.
+
+To use:
 
 - If you're using a bundler for your project, you can install the package from npm:
 
-  ```bash
-  npm install lna.js
+  ```sh
+  npm install lna
   ```
 
 - If you're using a browser environment without a bundler, you can include the script directly from
@@ -36,6 +53,13 @@ try {
   <script src="https://cdn.jsdelivr.net/npm/lna@0.1/dist/lna.bundle.min.js"></script>
   ```
   The library will be available as global variable `lna`.
+
+- Alternatively, you can build the library from source:
+
+  ```sh
+  yarn install
+  yarn build
+  ```
 
 ## API
 
