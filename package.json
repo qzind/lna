@@ -2,6 +2,7 @@
   "name": "lna",
   "version": "0.0.1",
   "description": "Helpers for Local Network Access restrictions",
+  "license": "MIT",
   "main": "./dist/lna.cjs",
   "module": "./dist/lna.mjs",
   "exports": {
