@@ -1,8 +1,31 @@
 import {commands} from "vitest/browser";
 import {AddressSpace} from "src/address-space.js";
 import {expect} from "vitest";
-import {connectWebSocket} from "../../src/wrappers.js";
 import {getBrowserSupport} from "../../src/permissions";
+
+// Promisified WebSocket open
+type WebSocketArgs = ConstructorParameters<typeof WebSocket>;
+export async function connectWebSocket(...args: WebSocketArgs): Promise<WebSocket> {
+	return new Promise((resolve, reject) => {
+		const ws = new WebSocket(...args);
+		const resolveFn = () => {
+			resolve(ws);
+			cleanup();
+		}
+		const rejectFn = () => {
+			reject(arguments);
+			cleanup();
+		};
+		const cleanup = () => {
+			ws.removeEventListener('open', resolveFn);
+			ws.removeEventListener('error', rejectFn);
+			ws.removeEventListener('close', rejectFn);
+		}
+		ws.addEventListener('open', resolveFn);
+		ws.addEventListener('error', rejectFn);
+		ws.addEventListener('close', rejectFn);
+	});
+}
 
 export const Support = await getBrowserSupport();
 
