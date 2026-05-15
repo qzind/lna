@@ -120,9 +120,8 @@ const browsers = Object.entries({
 		// Versions with LNA enabled by default
 		'141', '142', '143', '144', '145', '146',
 		// First version with WebSocket restrictions enabled
-		'147',
-		'148',
-		'149',
+		'147', '148', '149',
+		['canary', '150'],
 	],
 	firefox: [
 		'stable_148.0',
