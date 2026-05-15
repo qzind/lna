@@ -23,12 +23,17 @@ try {
 
 ## Limitations
 
+- Browser implementations vary and are changing rapidly. While we make our best effort to reflect
+  the current state of the web platform, there may always be inaccuracies. Using the latest version
+  of this library may be essential to ensure future functionality.
 - Public domain names in origin or target address are not resolved, but assumed to be in `public`.
   If you have a domain `example.com` that resolves to a local IP address, you should override this
   behavior using `options.defaultAddressSpace` or `options.override`.
 - Browser settings or policies (such as Chrome's [LocalNetworkAccessAllowedForUrls](https://chromeenterprise.google/intl/en_ca/policies/local-network-access-allowed-for-urls/))
   may change whether permissions are required for a given request, with no way for the library to
   know about it.
+- We can't detect when a permission prompt is dismissed (such as by pressing <kbd>Esc</kbd>) rather
+  than explicitly allowed or denied.
 
 ## Installation
 
