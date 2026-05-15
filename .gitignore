@@ -24,3 +24,9 @@ __screenshots__
 
 # vite
 dist/
+
+# Result of npm pack
+*.tgz
+
+# Runtime data, such as TestingBot Tunnel
+*.pid
