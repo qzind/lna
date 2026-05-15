@@ -2,7 +2,12 @@
   "name": "lna",
   "version": "0.1.0",
   "description": "Helpers for Local Network Access restrictions",
+  "author": "QZ Industries, LLC",
+  "homepage": "https://github.com/qzind/lna#readme",
   "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/qzind/lna/issues"
+  },
   "main": "./dist/lna.cjs",
   "module": "./dist/lna.mjs",
   "exports": {
