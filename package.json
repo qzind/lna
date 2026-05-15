@@ -52,7 +52,6 @@
     "vitest": "^4.1",
     "webdriverio": "^9.25.0"
   },
-  "private": true,
   "packageManager": "yarn@4.13.0",
   "files": [
     "dist",
