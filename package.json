@@ -12,7 +12,8 @@
   "scripts": {
     "build": "rollup -c",
     "test": "vitest",
-    "demo": "vite --config demo/vite.config.ts"
+    "demo": "vite --config demo/vite.config.ts",
+    "prepack": "npm run build"
   },
   "dependencies": {
     "ip-address": "^10.1.0"
@@ -47,5 +48,10 @@
     "webdriverio": "^9.25.0"
   },
   "private": true,
-  "packageManager": "yarn@4.13.0"
+  "packageManager": "yarn@4.13.0",
+  "files": [
+    "dist",
+    "!dist/dts",
+    "src"
+  ]
 }
