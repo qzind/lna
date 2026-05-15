@@ -1,25 +1,25 @@
 import type {UserConfig} from 'vite'
 import * as path from "node:path";
+import babel from "@rollup/plugin-babel";
 
 import httpServerPlugin from "./vite/vite-plugin-http-server";
 import {AddressSpace, AddressSpaceOverrides} from "./util/address-space-override";
-
-import packageJson from './package.json' with {type: 'json'};
-import babel from "@rollup/plugin-babel";
+import {findFreePort} from "./testing/net";
 
 import babelOptions from './rollup.babel.config.ts';
+import packageJson from './package.json' with {type: 'json'};
 
 export const TestServerAddress = '127.0.0.1';
 export const TestServers = {
 	success: {
-		loopback: 10001,
-		local: 10002,
-		public: 10003,
+		loopback: await findFreePort(10001),
+		local: await findFreePort(10002),
+		public: await findFreePort(10003),
 	},
 	fail: {
-		loopback: 11001,
-		local: 11002,
-		public: 11003,
+		loopback: await findFreePort(11001),
+		local: await findFreePort(11002),
+		public: await findFreePort(11003),
 	},
 }
 
