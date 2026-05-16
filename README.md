@@ -48,14 +48,14 @@ To use:
 - If you're using a bundler for your project, you can install the package from npm:
 
   ```sh
-  npm install lna
+  npm install qz-lna
   ```
 
 - If you're using a browser environment without a bundler, you can include the script directly from
   a CDN, e.g.
 
   ```html
-  <script src="https://cdn.jsdelivr.net/npm/lna@0.1/dist/lna.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qz-lna@0.1/dist/lna.bundle.min.js"></script>
   ```
   The library will be available as global variable `lna`.
 
