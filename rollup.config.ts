@@ -38,12 +38,12 @@ export default [
 			{
 				format: 'iife',
 				file: 'dist/lna.bundle.js',
-				name: pkg.name,
+				name: 'lna',
 			},
 			{
 				format: 'iife',
 				file: 'dist/lna.bundle.min.js',
-				name: pkg.name,
+				name: 'lna',
 				plugins: [terser()],
 			},
 		],
