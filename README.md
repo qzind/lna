@@ -1,4 +1,4 @@
-# lna.js
+# qz-lna
 
 JS browser library for trying to determine whether a connection failed due to
 denied [Local Network Access](https://wicg.github.io/local-network-access/)
@@ -7,7 +7,7 @@ permissions.
 ## Example
 
 ```js
-import {detectLna, LnaError} from "lna.js";
+import {detectLna, LnaError} from "qz-lna";
 
 try {
 	await detectLna("http://127.0.0.1:8000", fetch)
