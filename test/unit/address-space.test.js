@@ -8,7 +8,7 @@ describe('guessAddressSpace', () => {
 		test.each([
 			'127.0.0.1',
 			'0:0:0:0:0:0:0:1', '::1', '[::1]',
-			'::ffff:127.0.0.1', // IPv4-mapped IPv6 address
+			'::ffff:127.0.0.1', '::ffff:7f00:1', // IPv4-mapped IPv6 address
 			'2002:7f00:0001::', // 6to4
 			'localhost', 'myapp.localhost',
 			'localhost.example.com',

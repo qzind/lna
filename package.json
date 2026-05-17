@@ -22,7 +22,7 @@
     "prepack": "npm run build"
   },
   "dependencies": {
-    "ip-address": "^10.1.0"
+    "ip-address": "^10.2.0"
   },
   "type": "module",
   "types": "./dist/index.d.ts",

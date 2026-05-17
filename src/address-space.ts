@@ -30,29 +30,18 @@ export function guessAddressSpace(hostname: string, options?: LnaOptions): Detec
 }
 
 function getIp4AddressSpace(ip: Address4): AddressSpace {
-	// Loopback addresses
-	if (ip.isInSubnet(new Address4('127.0.0.0/8'))) return "loopback";
-	// Class A networks
-	if (ip.isInSubnet(new Address4('10.0.0.0/8'))) return "local";
-	// Class B networks
-	if (ip.isInSubnet(new Address4('172.16.0.0/12'))) return "local";
-	// Class C networks
-	if (ip.isInSubnet(new Address4('192.168.0.0/16'))) return "local";
-	// DHCP
-	if (ip.isInSubnet(new Address4('169.254.0.0/16'))) return "local";
-	// Carrier-grade NAT
-	if (ip.isInSubnet(new Address4('100.64.0.0/10'))) return "local";
+	if (ip.isLoopback()) return "loopback";
+	// Class A,B,C networks (10.0.00/8, 172.16.0.0/12, 192.168.0.0/16), DHCP
+	// link-local (9169.254.0.0/16), or Carrier-grade NAT (100.64.0.0/10)
+	if (ip.isPrivate() || ip.isLinkLocal() || ip.isCGNAT()) return "local";
 	return "public";
 }
 
 function getIp6AddressSpace(ip: Address6): AddressSpace {
 	if (ip.isLoopback()) return "loopback";
-	if (ip.isLinkLocal()) return "local";
-	if (ip.isInSubnet(new Address6('fc00::/7'))) return "local";
-	// IPv4-mapped IPv6
-	if (ip.isInSubnet(new Address6('::ffff:0:0/96'))) {
-		const ipv4 = Address4.fromHex(ip.getBitsBase16(96, 128));
-		return getIp4AddressSpace(ipv4);
+	if (ip.isLinkLocal() || ip.isULA()) return "local";
+	if (ip.isMapped4()) {
+		return getIp4AddressSpace(ip.to4());
 	}
 	if (ip.is6to4()) {
 		return getIp4AddressSpace(new Address4(ip.inspect6to4().gateway));
