@@ -4257,39 +4257,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lna@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "lna@workspace:."
-  dependencies:
-    "@babel/core": "npm:^7.29.0"
-    "@babel/preset-env": "npm:^7.29.2"
-    "@docker/node-sdk": "npm:^0.0.17"
-    "@rollup/plugin-babel": "npm:^7.0.0"
-    "@rollup/plugin-commonjs": "npm:^29.0.2"
-    "@rollup/plugin-node-resolve": "npm:^16.0.3"
-    "@rollup/plugin-terser": "npm:^1.0.0"
-    "@rollup/plugin-typescript": "npm:^12.3.0"
-    "@types/babel__core": "npm:^7"
-    "@types/babel__preset-env": "npm:^7"
-    "@types/react": "npm:^19"
-    "@types/react-dom": "npm:^19"
-    "@vitejs/plugin-react-swc": "npm:^4.3.0"
-    "@vitest/browser-webdriverio": "npm:^4.1.0"
-    apt-parser: "npm:^1.5.1"
-    compare-versions: "npm:^6.1.1"
-    core-js: "npm:^3"
-    ip-address: "npm:^10.1.0"
-    react: "npm:^19.2.4"
-    react-dom: "npm:^19.2.4"
-    rollup: "npm:^4.60.1"
-    rollup-plugin-dts: "npm:^6.4.1"
-    typescript: "npm:^5.9.3"
-    vite: "npm:^7"
-    vitest: "npm:^4.1"
-    webdriverio: "npm:^9.25.0"
-  languageName: unknown
-  linkType: soft
-
 "locate-app@npm:^2.2.24":
   version: 2.5.0
   resolution: "locate-app@npm:2.5.0"
@@ -4871,6 +4838,39 @@ __metadata:
   checksum: 10c0/f36de03f170ff1da69c3eecfa7f8b01e450a46dd266c921e17f36076ec59862eee00179489f30cb17c118bb56e868436578c01ea66f671fb358750d6ae474125
   languageName: node
   linkType: hard
+
+"qz-lna@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "qz-lna@workspace:."
+  dependencies:
+    "@babel/core": "npm:^7.29.0"
+    "@babel/preset-env": "npm:^7.29.2"
+    "@docker/node-sdk": "npm:^0.0.17"
+    "@rollup/plugin-babel": "npm:^7.0.0"
+    "@rollup/plugin-commonjs": "npm:^29.0.2"
+    "@rollup/plugin-node-resolve": "npm:^16.0.3"
+    "@rollup/plugin-terser": "npm:^1.0.0"
+    "@rollup/plugin-typescript": "npm:^12.3.0"
+    "@types/babel__core": "npm:^7"
+    "@types/babel__preset-env": "npm:^7"
+    "@types/react": "npm:^19"
+    "@types/react-dom": "npm:^19"
+    "@vitejs/plugin-react-swc": "npm:^4.3.0"
+    "@vitest/browser-webdriverio": "npm:^4.1.0"
+    apt-parser: "npm:^1.5.1"
+    compare-versions: "npm:^6.1.1"
+    core-js: "npm:^3"
+    ip-address: "npm:^10.1.0"
+    react: "npm:^19.2.4"
+    react-dom: "npm:^19.2.4"
+    rollup: "npm:^4.60.1"
+    rollup-plugin-dts: "npm:^6.4.1"
+    typescript: "npm:^5.9.3"
+    vite: "npm:^7"
+    vitest: "npm:^4.1"
+    webdriverio: "npm:^9.25.0"
+  languageName: unknown
+  linkType: soft
 
 "react-dom@npm:^19.2.4":
   version: 19.2.4
