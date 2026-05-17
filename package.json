@@ -1,6 +1,6 @@
 {
   "name": "qz-lna",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Helpers for Local Network Access restrictions",
   "author": "QZ Industries, LLC",
   "homepage": "https://github.com/qzind/lna#readme",
