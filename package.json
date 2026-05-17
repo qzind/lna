@@ -15,7 +15,7 @@
     "require": "./dist/lna.cjs"
   },
   "scripts": {
-    "build": "npx rollup -c",
+    "build": "yarn rollup -c",
     "test": "vitest",
     "demo": "vite --config demo/vite.config.ts",
     "prepack": "npm run build"
