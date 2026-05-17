@@ -8,6 +8,7 @@
   "bugs": {
     "url": "https://github.com/qzind/lna/issues"
   },
+  "repository": "github:qzind/lna",
   "main": "./dist/lna.cjs",
   "module": "./dist/lna.mjs",
   "exports": {
