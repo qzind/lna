@@ -15,10 +15,10 @@
     "require": "./dist/lna.cjs"
   },
   "scripts": {
-    "build": "yarn rollup -c",
+    "build": "npx rollup -c",
     "test": "vitest",
     "demo": "vite --config demo/vite.config.ts",
-    "prepack": "yarn build"
+    "prepack": "npm run build"
   },
   "dependencies": {
     "ip-address": "^10.1.0"
