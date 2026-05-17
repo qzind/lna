@@ -22,5 +22,5 @@ jobs:
           registry-url: https://registry.npmjs.org/
           package-manager-cache: false
 
-      - run: yarn install --frozen-lockfile
+      - run: yarn install --immutable
       - run: npm publish --provenance --access public
