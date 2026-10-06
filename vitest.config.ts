@@ -2,12 +2,6 @@ import {defineConfig, ViteUserConfig} from 'vitest/config'
 import {BrowserCommand, BrowserInstanceOption} from "vitest/node";
 import * as path from "node:path";
 
-import viteConfig, {
-	OriginAddressSpaceDefineName,
-	TestServerAddressDefines,
-	TestServerAddressSpaceOverrides
-} from './vite.config.js';
-
 import {
 	AddressSpace,
 	AddressSpaceOverrides,
@@ -16,6 +10,9 @@ import {
 } from "./util/address-space-override.js";
 import {webdriverioProvider, WebdriverIOProviderOptions} from "./vite/webdriverio-provider.js";
 import {msEdgeProvider} from "./vite/msedge-provider/provider.js";
+import httpServerPlugin from "./vite/vite-plugin-http-server";
+import type {UserConfig} from "vite";
+import {findFreePort} from "./testing/net";
 
 const setPermissions: BrowserCommand<[PermissionDescriptor, PermissionState]> = async (ctx, descriptor, state) => {
 	if (ctx.provider.name !== 'webdriverio') {
@@ -122,6 +119,7 @@ const browsers = Object.entries({
 		// First version with WebSocket restrictions enabled
 		'147', '148', '149',
 		['canary', '150'],
+		'149'
 	],
 	firefox: [
 		'stable_148.0',
@@ -163,8 +161,40 @@ function e2eTest(originAddressSpace: AddressSpace): ViteUserConfig {
 	};
 }
 
+export const TestServerAddress = '127.0.0.1';
+export const TestServers = {
+	success: {
+		loopback: await findFreePort(10001),
+		local: await findFreePort(10002),
+		public: await findFreePort(10003),
+	},
+	fail: {
+		loopback: await findFreePort(11001),
+		local: await findFreePort(11002),
+		public: await findFreePort(11003),
+	},
+}
+
+export const OriginAddressSpaceDefineName = 'lna_origin_address_space';
+
+export const TestServerAddressDefines = Object.fromEntries(
+	Object.entries(TestServers).flatMap(([type, spaces]) =>
+		Object.entries(spaces).map(
+			([space, port]) => [
+				`lna_${space}_${type}_url`,
+				JSON.stringify(`http://${TestServerAddress}:${port}`)
+			]
+		)
+	)
+)
+
+export const TestServerAddressSpaceOverrides: AddressSpaceOverrides = Object.fromEntries(
+	[...Object.entries(TestServers.success), ...Object.entries(TestServers.fail)].map(
+		([space, port]) => [`${TestServerAddress}:${port}`, space as AddressSpace]
+	)
+);
+
 export default defineConfig({
-	...viteConfig,
 	test: {
 		projects: [
 			{
@@ -194,4 +224,14 @@ export default defineConfig({
 			e2eTest('public'),
 		],
 	},
+	plugins: [
+		httpServerPlugin({port: TestServers.success.public}),
+		httpServerPlugin({port: TestServers.success.local}),
+		httpServerPlugin({port: TestServers.success.loopback}),
+		// HTTP server sending empty responses (for testing connection errors that aren't permission
+		// errors)
+		httpServerPlugin({respond: false, port: TestServers.fail.public}),
+		httpServerPlugin({respond: false, port: TestServers.fail.local}),
+		httpServerPlugin({respond: false, port: TestServers.fail.loopback}),
+	],
 })
