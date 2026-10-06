@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Update dependency `ip-address` to 10.2
+- Bump `ip-address` to 10.7 in lock-file to address CVE-2026-69192
 
 ## 0.1.1
 
