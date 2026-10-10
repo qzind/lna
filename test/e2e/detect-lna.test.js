@@ -54,10 +54,10 @@ const expectDetectGrantedFetch = expectDetectGranted.bind(null, false);
 const expectDetectGrantedWebSocket = expectDetectGranted.bind(null, true);
 
 async function expectDetectResolves(ws, targetSpace) {
-	await expect(detectLna(
+	await detectLna(
 		targetUrl(targetSpace), ws ? probeWebSocket : fetch,
 		{overrides: {originAddressSpace, targetAddressSpace: targetSpace}, isWebSocket: ws}
-	)).resolves;
+	);
 }
 
 async function expectDetectRejects(url, ws, targetSpace, error) {
