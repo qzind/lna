@@ -30,21 +30,17 @@ export function getBrowserQuirks(): BrowserQuirks {
 		q.webSocketsUnrestricted = true;
 	}
 
-	if (is('firefox')) {
-		// WebSocket restrictions are currently disabled in Firefox because of backwards
-		// compatibility breaks. See
-		//  - https://bugzilla.mozilla.org/show_bug.cgi?id=1993938
-		//  - https://bugzilla.mozilla.org/show_bug.cgi?id=1996551
+	if (is('firefox', '<', 154)) {
+		// https://www.firefox.com/en-US/firefox/154.0/releasenotes/
 		q.webSocketsUnrestricted = true;
 	}
 
-	// Release notes state that LNA restrictions are extended to all users with v150 (as opposed to
-	// just ETP Strict users): https://www.firefox.com/en-US/firefox/150.0beta/releasenotes/
-	// Testing however shows this to be the case starting with v151 only, as corroborated by the
-	// support page:
+	// LNA restrictions are enabled by default (not just with ETP strict)
+	// starting with v153
+	// https://www.firefox.com/en-US/firefox/153.0/releasenotes/
 	// https://support.mozilla.org/en-US/kb/control-personal-device-local-network-permissions-firefox
 	// Note that when not opted in, permissions.query will fail
-	if (is('firefox', '<', 151)) {
+	if (is('firefox', '<', 153)) {
 		q.permissionsAreOptIn = true;
 	}
 

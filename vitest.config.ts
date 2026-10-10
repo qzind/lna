@@ -93,7 +93,10 @@ function instance(
 					],
 				},
 				'moz:firefoxOptions': {
-					prefs: FirefoxAddressSpaceOverridesPrefs(addressSpaceOverrides),
+					prefs: {
+						'nimbus.rollouts.enabled': false,
+						...FirefoxAddressSpaceOverridesPrefs(addressSpaceOverrides),
+					},
 				},
 			},
 		}),
@@ -125,8 +128,13 @@ const browsers = Object.entries({
 		'stable_148.0',
 		'stable_149.0',
 		'stable_150.0',
-		'beta_151.0b6',
-		'nightly_152.0a1',
+		'stable_151.0', // Start of gradual LNA rollout
+		'stable_152.0',
+		'stable_153.0', // LNA restrictions enabled by default
+		'stable_154.0', // WebSocket restrictions enabled by default
+		'stable_155.0',
+		'stable_156.0',
+		'stable_157.0',
 	],
 	edge: [
 		'142', // Last version without LNA restrictions by default

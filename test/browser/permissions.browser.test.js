@@ -22,7 +22,7 @@ function expectedSupport() {
 	if (isBrowser('firefox', '<', 149)) {
 		return [];
 	}
-	if (isBrowser('firefox', '<', 151)) {
+	if (isBrowser('firefox', '<', 153)) {
 		// Unless ETP is set to strict
 		return [];
 	}
