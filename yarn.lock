@@ -4590,6 +4590,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"node-downloader-helper@npm:^2.1.11":
+  version: 2.1.11
+  resolution: "node-downloader-helper@npm:2.1.11"
+  bin:
+    ndh: bin/ndh
+  checksum: 10c0/2cf5c1f93cb46317273f942d5c2d4bf420f6c3ad5ecb083835fe8cecca09d78c272efc5c56134a25d1be4b381fcddb71382024e20d03547f1ed631f738101567
+  languageName: node
+  linkType: hard
+
 "node-gyp@npm:latest":
   version: 12.2.0
   resolution: "node-gyp@npm:12.2.0"
@@ -4912,6 +4921,7 @@ __metadata:
     compare-versions: "npm:^6.1.1"
     core-js: "npm:^3"
     ip-address: "npm:^10.2.0"
+    node-downloader-helper: "npm:^2.1.11"
     react: "npm:^19.2.4"
     react-dom: "npm:^19.2.4"
     rollup: "npm:^4.60.1"

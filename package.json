@@ -44,6 +44,7 @@
     "apt-parser": "^1.5.1",
     "compare-versions": "^6.1.1",
     "core-js": "^3",
+    "node-downloader-helper": "^2.1.11",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "rollup": "^4.60.1",

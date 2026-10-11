@@ -3,11 +3,11 @@ import * as os from "node:os";
 import * as fsP from "node:fs/promises";
 import * as fs from "node:fs";
 import * as child_process from "node:child_process";
-import {Readable} from "node:stream";
 import * as util from "node:util";
 import * as apt from "apt-parser";
 import {compareVersions, satisfies} from "compare-versions";
 import {createDebugger} from "vitest/node";
+import {DownloaderHelper} from "node-downloader-helper";
 
 const debug = createDebugger('vitest:browser:edge:downloader');
 const DefaultRepoUrl = 'https://packages.microsoft.com/repos/edge/';
@@ -148,32 +148,26 @@ class MsEdgeDownloader {
 
 	protected async downloadPackage(pkg: apt.Package, dest: string): Promise<void> {
 		debug?.(`Downloading ${pkg.package} version ${pkg.version}`);
-		const url = new URL(pkg.filename, this.repoUrl);
 
 		const stat = await fsP.stat(dest, {throwIfNoEntry: false});
 		if (stat) {
-			debug?.(`${pkg.package} download already exists at ${dest}: ${stat}`);
-			if (!stat.isFile()) {
-				throw new Error(`Download destination already exists: ${dest}`);
-			}
-
-			if (stat.size > pkg.size) {
-				throw new Error(`Download destination already exists: ${dest}`);
-			} else if (stat.size === pkg.size) {
+			debug?.(`${pkg.package} download already exists at ${dest}`);
+			if (stat.size === pkg.size) {
 				return;
-			} else {
-				await fsP.unlink(dest);
 			}
 		}
 
-		const response = await fetch(url)
-		if (!response.ok) {
-			throw new Error(`Failed to download ${url}: ${response.status} ${response.statusText}`)
-		}
-		if (!response.body) {
-			throw new Error(`Failed to download ${url}: no response body`)
-		}
-		await fsP.writeFile(dest, Readable.fromWeb(response.body));
+		const url = new URL(pkg.filename, this.repoUrl);
+
+		const dl = new DownloaderHelper(url.toString(), path.dirname(dest), {
+			fileName: path.basename(dest),
+			resumeIfFileExists: true,
+		});
+		return new Promise<void>(async (resolve, reject) => {
+			dl.on('end', () => resolve());
+			dl.on('error', reject);
+			await dl.start();
+		});
 	}
 
 	protected async extractDeb(debPath: string, destDir: string) {
