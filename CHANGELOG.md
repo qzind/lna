@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.1.3
 
 - Reflect Firefox restrictions rollout delayed to v153
 
