@@ -138,7 +138,7 @@ const browsers = Object.entries({
 	edge: [
 		'142', // Last version without LNA restrictions by default
 		'143', '144', '145', '146', '147',
-		['canary', '148'],
+		'148', '149', '150', '151', '152', '153', '154', '155',
 	],
 	safari: [
 		'stable',
