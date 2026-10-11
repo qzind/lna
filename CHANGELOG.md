@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Reflect Firefox restrictions rollout delayed to v153
+
 ## 0.1.2
 
 - Bump `ip-address` to 10.7 in lock-file to address CVE-2026-69192
